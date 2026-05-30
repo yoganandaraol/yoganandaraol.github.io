@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EF Core Performance — Architect Deep Dive</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181b22;
+    --border: #1e222d;
+    --accent: #f5a623;
+    --accent2: #4fc3f7;
+    --accent3: #a78bfa;
+    --accent4: #34d399;
+    --danger: #f87171;
+    --warn: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code-bg: #0d1117;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #111827 50%, #0a0c10 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,166,35,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-tag {
+    display: inline-block;
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    padding: 4px 14px;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 0.75rem;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    color: var(--muted);
+    font-size: 13px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  /* ─── CATEGORY LEGEND ─── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .cat-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .cat-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .cat-query    { background: rgba(79,195,247,0.1); color: var(--accent2); border: 1px solid rgba(79,195,247,0.2); }
+  .cat-writes   { background: rgba(52,211,153,0.1); color: var(--accent4); border: 1px solid rgba(52,211,153,0.2); }
+  .cat-schema   { background: rgba(167,139,250,0.1); color: var(--accent3); border: 1px solid rgba(167,139,250,0.2); }
+  .cat-perf     { background: rgba(245,166,35,0.1);  color: var(--accent);  border: 1px solid rgba(245,166,35,0.2); }
+  .cat-debug    { background: rgba(248,113,113,0.1); color: var(--danger);  border: 1px solid rgba(248,113,113,0.2); }
+
+  /* ─── LAYOUT ─── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* ─── RULE CARD ─── */
+  .rule-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .rule-card:hover { border-color: #2d3344; }
+
+  .rule-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .rule-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--border);
+    min-width: 2.5rem;
+    line-height: 1;
+    padding-top: 3px;
+    transition: color 0.2s;
+  }
+  .rule-card:hover .rule-number { color: #2d3344; }
+
+  .rule-title-block { flex: 1; }
+  .rule-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .rule-sub { color: var(--muted); font-size: 12px; }
+
+  .toggle-btn {
+    background: none; border: none; color: var(--muted);
+    font-size: 18px; cursor: pointer; padding: 4px 8px;
+    transition: color 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-btn:hover { color: var(--text); }
+
+  .rule-body { padding: 1.5rem; display: none; }
+  .rule-body.open { display: block; }
+
+  /* ─── SECTIONS INSIDE CARD ─── */
+  .section-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  @media (max-width: 700px) { .section-grid { grid-template-columns: 1fr; } }
+
+  .info-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem;
+  }
+  .info-box h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+  }
+  .info-box p, .info-box li { font-size: 13px; color: #94a3b8; line-height: 1.6; }
+  .info-box ul { padding-left: 1.2rem; }
+  .info-box li { margin-bottom: 3px; }
+
+  .box-concept h4 { color: var(--accent2); }
+  .box-problem h4 { color: var(--danger); }
+  .box-impact h4  { color: var(--warn); }
+  .box-when h4    { color: var(--accent4); }
+
+  /* ─── IMPACT TAGS ─── */
+  .impact-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.25rem; }
+  .impact-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 2px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+  .tag-memory  { background: rgba(248,113,113,0.12); color: var(--danger);  border: 1px solid rgba(248,113,113,0.25); }
+  .tag-query   { background: rgba(79,195,247,0.12);  color: var(--accent2); border: 1px solid rgba(79,195,247,0.25); }
+  .tag-cpu     { background: rgba(251,191,36,0.12);  color: var(--warn);    border: 1px solid rgba(251,191,36,0.25); }
+  .tag-io      { background: rgba(167,139,250,0.12); color: var(--accent3); border: 1px solid rgba(167,139,250,0.25); }
+  .tag-network { background: rgba(52,211,153,0.12);  color: var(--accent4); border: 1px solid rgba(52,211,153,0.25); }
+  .tag-lock    { background: rgba(245,166,35,0.12);  color: var(--accent);  border: 1px solid rgba(245,166,35,0.25); }
+
+  /* ─── CODE BLOCKS ─── */
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 14px 5px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .code-bad  { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.2); border-radius: 4px 4px 0 0; }
+  .code-bad .code-label  { color: var(--danger);  border-bottom-color: rgba(248,113,113,0.15); }
+  .code-good { background: rgba(52,211,153,0.06);  border: 1px solid rgba(52,211,153,0.2);  border-radius: 0 0 4px 4px; }
+  .code-good .code-label { color: var(--accent4); border-bottom-color: rgba(52,211,153,0.15); }
+  .code-block { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 1rem; }
+  .code-block .code-label { border-bottom-color: var(--border); color: var(--muted); }
+
+  pre {
+    background: var(--code-bg);
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: #e2e8f0;
+  }
+  .kw   { color: #c792ea; }
+  .str  { color: #c3e88d; }
+  .num  { color: #f78c6c; }
+  .cm   { color: #546e7a; font-style: italic; }
+  .fn   { color: #82aaff; }
+  .tp   { color: #ffcb6b; }
+  .op   { color: #89ddff; }
+  .prop { color: #f07178; }
+
+  /* ─── ARCHITECT NOTE ─── */
+  .arch-note {
+    background: rgba(167,139,250,0.06);
+    border-left: 3px solid var(--accent3);
+    padding: 0.75rem 1rem;
+    border-radius: 0 4px 4px 0;
+    font-size: 12.5px;
+    color: #94a3b8;
+    margin-top: 1rem;
+  }
+  .arch-note strong { color: var(--accent3); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  /* ─── DIVIDER ─── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  /* ─── CATEGORY PILL on card ─── */
+  .cat-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">EF Core · Senior Architect Reference</div>
+  <h1>11 Rules to <span>Optimize</span><br/>EF Core for Performance</h1>
+  <p>Architect-level deep dive — concept, problem domain, impact analysis, and production-grade C# examples</p>
+</header>
+
+<div class="legend">
+  <div class="cat-badge cat-query"><div class="cat-dot" style="background:var(--accent2)"></div>Query Efficiency</div>
+  <div class="cat-badge cat-writes"><div class="cat-dot" style="background:var(--accent4)"></div>Bulk Writes</div>
+  <div class="cat-badge cat-schema"><div class="cat-dot" style="background:var(--accent3)"></div>Schema &amp; Indexing</div>
+  <div class="cat-badge cat-perf"><div class="cat-dot" style="background:var(--accent)"></div>Runtime Perf</div>
+  <div class="cat-badge cat-debug"><div class="cat-dot" style="background:var(--danger)"></div>Observability</div>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 1 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">01</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        AsNoTracking() — Read-Only Query Optimization
+        <span class="cat-pill cat-query">Query Efficiency</span>
+      </div>
+      <div class="rule-sub">Eliminates Change Tracker overhead for pure reads</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-memory">Memory Pressure</span>
+      <span class="impact-tag tag-cpu">CPU — Change Detection</span>
+      <span class="impact-tag tag-query">Query Latency</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p>By default EF Core registers every materialized entity in its Identity Map and Change Tracker. This allows <code>SaveChanges()</code> to detect mutations automatically via snapshot diffing. AsNoTracking() bypasses this pipeline entirely — entities are returned as plain POCOs with no internal proxy wrappers or snapshot allocations.</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Problem If Ignored</h4>
+        <ul>
+          <li>Each tracked entity: ~2–4x memory overhead (original + snapshot)</li>
+          <li>DetectChanges() scans ALL tracked entities on SaveChanges</li>
+          <li>Under high concurrency this saturates LOH and triggers GC Gen2 pauses</li>
+          <li>DbContext lifetime leaks cause identity map bloat across requests</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>When To Use</h4>
+        <ul>
+          <li>GET endpoints, API projections, reports, dashboards</li>
+          <li>Any query where you do NOT call SaveChanges() on the result</li>
+          <li>Background jobs reading for processing (not writing back)</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Production Impact If Skipped</h4>
+        <ul>
+          <li>Throughput degradation under load (GC pressure)</li>
+          <li>Increased p99 latency in high-read workloads</li>
+          <li>Memory leaks in scoped DbContext misuse patterns</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-bad">
+      <div class="code-label">❌ TRACKED — unnecessary overhead</div>
+      <pre><span class="cm">// EF creates snapshots + tracks every Order entity</span>
+<span class="kw">var</span> orders <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>
+    .<span class="fn">Where</span>(o <span class="op">=></span> o.<span class="prop">CustomerId</span> <span class="op">==</span> customerId)
+    .<span class="fn">ToListAsync</span>();</pre>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ AS NO TRACKING — zero change tracker cost</div>
+      <pre><span class="cm">// For read-only API endpoints</span>
+<span class="kw">var</span> orders <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>
+    .<span class="fn">AsNoTracking</span>()
+    .<span class="fn">Where</span>(o <span class="op">=></span> o.<span class="prop">CustomerId</span> <span class="op">==</span> customerId)
+    .<span class="fn">ToListAsync</span>();
+
+<span class="cm">// Set globally for read-only DbContext variants</span>
+<span class="kw">protected override void</span> <span class="fn">OnConfiguring</span>(<span class="tp">DbContextOptionsBuilder</span> optionsBuilder)
+{
+    optionsBuilder.<span class="fn">UseQueryTrackingBehavior</span>(<span class="tp">QueryTrackingBehavior</span>.NoTracking);
+}</pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> Register two DbContext variants in DI: a read-only one with <code>NoTracking</code> as default + a write-capable one. Route read endpoints to the read context. This eliminates entire classes of accidental mutation bugs in addition to the perf gains.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 2 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">02</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        N+1 Problem — Include() vs DTO Projection
+        <span class="cat-pill cat-query">Query Efficiency</span>
+      </div>
+      <div class="rule-sub">The single most common EF Core performance killer in production</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-io">DB Round-Trips</span>
+      <span class="impact-tag tag-network">Network Saturation</span>
+      <span class="impact-tag tag-query">Query Explosion</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p>N+1 occurs when you load a collection (1 query) and then access a navigation property per item (N queries). With lazy loading enabled, this is invisible in code but catastrophic at runtime. The fix is either eager loading via <code>Include()</code> (JOIN-based) or DTO projection via <code>Select()</code> (targeted SQL).</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Problem If Ignored</h4>
+        <ul>
+          <li>100 orders = 101 SQL queries instead of 1</li>
+          <li>DB connection pool exhaustion under moderate load</li>
+          <li>Timeouts cascade: each lazy load consumes a connection slot</li>
+          <li>Invisible in development (small dataset), catastrophic in prod</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>Include() vs Projection — When?</h4>
+        <ul>
+          <li><strong>Include():</strong> when you need full entity graph and will track/modify</li>
+          <li><strong>Select() projection:</strong> always preferred for API reads — returns only needed columns, avoids cartesian explosion risk with multiple Includes</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Deployment Impact</h4>
+        <ul>
+          <li>DB CPU spikes during traffic bursts</li>
+          <li>Read replicas overloaded with redundant queries</li>
+          <li>APM tools show hundreds of near-identical SQL statements</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-bad">
+      <div class="code-label">❌ N+1 DISASTER — lazy load in a loop</div>
+      <pre><span class="kw">var</span> orders <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>.<span class="fn">ToListAsync</span>(); <span class="cm">// Query 1</span>
+<span class="kw">foreach</span> (<span class="kw">var</span> order <span class="kw">in</span> orders)
+{
+    <span class="cm">// Each access fires a SELECT — N more queries!</span>
+    <span class="kw">var</span> name <span class="op">=</span> order.<span class="prop">Customer</span>.<span class="prop">Name</span>;
+}</pre>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ EAGER LOAD with Include() — single JOIN query</div>
+      <pre><span class="kw">var</span> orders <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>
+    .<span class="fn">Include</span>(o <span class="op">=></span> o.<span class="prop">Customer</span>)
+    .<span class="fn">Include</span>(o <span class="op">=></span> o.<span class="prop">Items</span>).<span class="fn">ThenInclude</span>(i <span class="op">=></span> i.<span class="prop">Product</span>)
+    .<span class="fn">AsNoTracking</span>()
+    .<span class="fn">ToListAsync</span>();
+
+<span class="cm">// ─── PREFERRED for APIs: DTO Projection ───────────────</span>
+<span class="kw">var</span> dtos <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>
+    .<span class="fn">AsNoTracking</span>()
+    .<span class="fn">Select</span>(o <span class="op">=></span> <span class="kw">new</span> <span class="tp">OrderSummaryDto</span>
+    {
+        OrderId      <span class="op">=</span> o.<span class="prop">Id</span>,
+        CustomerName <span class="op">=</span> o.<span class="prop">Customer</span>.<span class="prop">Name</span>,   <span class="cm">// EF generates JOIN — no N+1</span>
+        TotalItems   <span class="op">=</span> o.<span class="prop">Items</span>.<span class="fn">Count</span>(),
+        TotalValue   <span class="op">=</span> o.<span class="prop">Items</span>.<span class="fn">Sum</span>(i <span class="op">=></span> i.<span class="prop">Price</span>)
+    })
+    .<span class="fn">ToListAsync</span>();</pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> Multiple <code>Include()</code> on collection navigations generates cartesian products (SQL cross-join explosion). For complex graphs, use <code>AsSplitQuery()</code> to emit separate optimised SELECTs per navigation. Measure both — split queries add round-trips, cartesian multiplies rows.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 3 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">03</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        Select() Column Projection
+        <span class="cat-pill cat-query">Query Efficiency</span>
+      </div>
+      <div class="rule-sub">Stop SELECT * — fetch only what your caller needs</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-io">I/O Bandwidth</span>
+      <span class="impact-tag tag-network">Network Transfer</span>
+      <span class="impact-tag tag-memory">Heap Allocation</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p>EF Core translates LINQ <code>Select()</code> projections into targeted SQL column lists. Without projection, EF emits <code>SELECT *</code> which pulls every column — including large BLOBs, XML fields, and audit columns — even when your caller only displays two fields.</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Problem If Ignored</h4>
+        <ul>
+          <li>Serialising unused columns wastes DB → app → client bandwidth</li>
+          <li>Large NVARCHAR(MAX)/VARBINARY columns bloat the result set dramatically</li>
+          <li>Wider rows = fewer rows fit in buffer pool pages = more I/O</li>
+          <li>JSON serialiser (System.Text.Json) processes and allocates ALL properties</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>Always Project For</h4>
+        <ul>
+          <li>List/search endpoints (return DTOs, not entities)</li>
+          <li>Dropdown/autocomplete queries (id + name only)</li>
+          <li>Dashboard aggregations (compute server-side)</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Deployment Impact</h4>
+        <ul>
+          <li>Reduced SQL Server buffer pool pressure</li>
+          <li>Lower ASP.NET serialisation CPU</li>
+          <li>Reduced response payload = lower CDN egress costs</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-bad">
+      <div class="code-label">❌ FULL ENTITY — pulls all 40 columns including Resume BLOB</div>
+      <pre><span class="kw">var</span> employees <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Employees</span>
+    .<span class="fn">Where</span>(e <span class="op">=></span> e.<span class="prop">DepartmentId</span> <span class="op">==</span> deptId)
+    .<span class="fn">ToListAsync</span>(); <span class="cm">// SELECT * — includes Photo, Resume, etc.</span></pre>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ PROJECTED — targeted SQL, minimal allocation</div>
+      <pre><span class="cm">// Dropdown: just id + name</span>
+<span class="kw">var</span> lookup <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Employees</span>
+    .<span class="fn">Where</span>(e <span class="op">=></span> e.<span class="prop">DepartmentId</span> <span class="op">==</span> deptId <span class="op">&&</span> e.<span class="prop">IsActive</span>)
+    .<span class="fn">Select</span>(e <span class="op">=></span> <span class="kw">new</span> { e.<span class="prop">Id</span>, e.<span class="prop">FullName</span> })
+    .<span class="fn">AsNoTracking</span>()
+    .<span class="fn">ToListAsync</span>();
+
+<span class="cm">// Rich DTO — only the columns the card UI renders</span>
+<span class="kw">var</span> cards <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Employees</span>
+    .<span class="fn">AsNoTracking</span>()
+    .<span class="fn">Select</span>(e <span class="op">=></span> <span class="kw">new</span> <span class="tp">EmployeeCardDto</span>
+    {
+        Id         <span class="op">=</span> e.<span class="prop">Id</span>,
+        FullName   <span class="op">=</span> e.<span class="prop">FullName</span>,
+        Title      <span class="op">=</span> e.<span class="prop">JobTitle</span>,
+        Department <span class="op">=</span> e.<span class="prop">Department</span>.<span class="prop">Name</span>,
+        <span class="cm">// No Photo, Resume, AuditFields — saves 200KB per row</span>
+    })
+    .<span class="fn">ToListAsync</span>();</pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> Combine with <code>AsNoTracking()</code> — projected anonymous types and DTOs cannot be tracked anyway (no key identity), so EF skips tracking automatically. But explicit <code>AsNoTracking()</code> signals intent and avoids ambiguity.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 4 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">04</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        Database Indexes on Filter &amp; Join Fields
+        <span class="cat-pill cat-schema">Schema &amp; Indexing</span>
+      </div>
+      <div class="rule-sub">EF migrations give you index control — use it systematically</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-io">I/O — Table Scans</span>
+      <span class="impact-tag tag-query">Query Plan</span>
+      <span class="impact-tag tag-lock">Lock Escalation</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p>EF Core only creates indexes automatically for primary keys and foreign keys. Every WHERE, JOIN ON, and ORDER BY column in your hot queries needs an explicit index defined in <code>OnModelCreating</code> or via Data Annotations. Without indexes, SQL Server performs full table scans — O(n) per query regardless of data.</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Problem If Ignored</h4>
+        <ul>
+          <li>Full scans lock pages longer → lock escalation → blocking chains</li>
+          <li>Query cost grows linearly with table size — silent until scale</li>
+          <li>Missing index on FK = slow joins and cascade operations</li>
+          <li>Composite indexes order matters: (A,B) ≠ (B,A) — wrong order = no index seek</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>Index Strategy Rules</h4>
+        <ul>
+          <li>Every FK column gets an index (EF doesn't auto-create)</li>
+          <li>Composite: put highest-selectivity column first</li>
+          <li>Covering index: include non-filter columns to avoid key lookups</li>
+          <li>Filtered index: partial index for IsDeleted = 0 patterns</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Deployment Impact</h4>
+        <ul>
+          <li>Missing indexes on a 10M row table = seconds per query</li>
+          <li>Full scans cause autovacuum/maintenance storms on high write tables</li>
+          <li>Index rebuilds need maintenance windows on large tables</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ SYSTEMATIC INDEX DEFINITION in Fluent API</div>
+      <pre><span class="kw">protected override void</span> <span class="fn">OnModelCreating</span>(<span class="tp">ModelBuilder</span> modelBuilder)
+{
+    modelBuilder.<span class="fn">Entity</span>&lt;<span class="tp">Order</span>&gt;(e <span class="op">=></span>
+    {
+        <span class="cm">// Single column index on FK (EF doesn't auto-create!)</span>
+        e.<span class="fn">HasIndex</span>(o <span class="op">=></span> o.<span class="prop">CustomerId</span>);
+
+        <span class="cm">// Composite: filter by status + date range (order matters!)</span>
+        e.<span class="fn">HasIndex</span>(o <span class="op">=></span> <span class="kw">new</span> { o.<span class="prop">Status</span>, o.<span class="prop">CreatedAt</span> })
+         .<span class="fn">HasDatabaseName</span>(<span class="str">"IX_Orders_Status_CreatedAt"</span>);
+
+        <span class="cm">// Covering index: include columns to avoid key lookup</span>
+        e.<span class="fn">HasIndex</span>(o <span class="op">=></span> o.<span class="prop">CustomerId</span>)
+         .<span class="fn">IncludeProperties</span>(o <span class="op">=></span> <span class="kw">new</span> { o.<span class="prop">TotalAmount</span>, o.<span class="prop">Status</span> });
+
+        <span class="cm">// Filtered index: only active orders (EF8+ / raw SQL fallback)</span>
+        e.<span class="fn">HasIndex</span>(o <span class="op">=></span> o.<span class="prop">AssignedUserId</span>)
+         .<span class="fn">HasFilter</span>(<span class="str">"[IsDeleted] = 0"</span>);
+    });
+}</pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> Run <code>sys.dm_db_missing_index_details</code> (SQL Server) or <code>pg_stat_user_tables</code> (Postgres) in staging with production-sized data. Let the query engine tell you what it needs — then translate those recommendations back into EF Fluent API index definitions. Never index-by-instinct on large tables.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 5 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">05</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        ExecuteUpdate / ExecuteDelete — Direct DB Ops
+        <span class="cat-pill cat-writes">Bulk Writes</span>
+      </div>
+      <div class="rule-sub">EF7+ bulk operators that bypass the entity pipeline entirely</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-memory">No Entity Materialisation</span>
+      <span class="impact-tag tag-io">Single SQL Statement</span>
+      <span class="impact-tag tag-cpu">No Change Tracker</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p>Before EF7, updating 10,000 rows required: load all 10,000 entities → mutate each → SaveChanges() detects changes → emits 10,000 UPDATE statements. <code>ExecuteUpdateAsync()</code> translates directly to a single <code>UPDATE … WHERE</code> statement — no materialisation, no change tracking, no round-trips per entity.</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Problem If Ignored</h4>
+        <ul>
+          <li>Loading 50K entities to update one column: 50K object allocations + GC</li>
+          <li>10K individual UPDATEs: transaction log explosion, lock escalation risk</li>
+          <li>Timeout failures on large batch operations</li>
+          <li>Locks held for duration of entire round-trip loop</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>When To Use</h4>
+        <ul>
+          <li>Bulk status updates (archive, soft-delete, flag)</li>
+          <li>Scheduled jobs processing large datasets</li>
+          <li>Admin operations: reset, recalculate, re-assign</li>
+          <li>NOT when: you need to fire domain events, run interceptors, or need optimistic concurrency per row</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Deployment Impact</h4>
+        <ul>
+          <li>Job that took 45s → ~200ms (measured in real systems)</li>
+          <li>Transaction log size: N individual UPDATEs vs 1 batch UPDATE</li>
+          <li>Lock duration: seconds vs milliseconds</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-bad">
+      <div class="code-label">❌ ENTITY LOAD LOOP — catastrophic at scale</div>
+      <pre><span class="kw">var</span> expiredOrders <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>
+    .<span class="fn">Where</span>(o <span class="op">=></span> o.<span class="prop">ExpiresAt</span> <span class="op">&lt;</span> <span class="tp">DateTime</span>.<span class="prop">UtcNow</span>)
+    .<span class="fn">ToListAsync</span>(); <span class="cm">// Loads 50,000 entities into memory</span>
+
+<span class="kw">foreach</span> (<span class="kw">var</span> o <span class="kw">in</span> expiredOrders)
+    o.<span class="prop">Status</span> <span class="op">=</span> <span class="tp">OrderStatus</span>.Expired;
+
+<span class="kw">await</span> _db.<span class="fn">SaveChangesAsync</span>(); <span class="cm">// 50,000 UPDATE statements</span></pre>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ ExecuteUpdateAsync — single SQL UPDATE WHERE</div>
+      <pre><span class="cm">// EF7+ — generates: UPDATE Orders SET Status = 2 WHERE ExpiresAt &lt; @now</span>
+<span class="kw">var</span> affected <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>
+    .<span class="fn">Where</span>(o <span class="op">=></span> o.<span class="prop">ExpiresAt</span> <span class="op">&lt;</span> <span class="tp">DateTime</span>.<span class="prop">UtcNow</span>)
+    .<span class="fn">ExecuteUpdateAsync</span>(s <span class="op">=></span> s
+        .<span class="fn">SetProperty</span>(o <span class="op">=></span> o.<span class="prop">Status</span>, <span class="tp">OrderStatus</span>.Expired)
+        .<span class="fn">SetProperty</span>(o <span class="op">=></span> o.<span class="prop">UpdatedAt</span>, <span class="tp">DateTime</span>.<span class="prop">UtcNow</span>));
+
+<span class="cm">// Soft delete — single DELETE WHERE (EF7+)</span>
+<span class="kw">await</span> _db.<span class="prop">AuditLogs</span>
+    .<span class="fn">Where</span>(l <span class="op">=></span> l.<span class="prop">CreatedAt</span> <span class="op">&lt;</span> <span class="tp">DateTime</span>.<span class="prop">UtcNow</span>.<span class="fn">AddYears</span>(<span class="op">-</span><span class="num">7</span>))
+    .<span class="fn">ExecuteDeleteAsync</span>();</pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> ExecuteUpdate/Delete bypass domain interceptors, audit triggers registered via EF SaveChanges, and optimistic concurrency tokens. Enforce a convention: bulk ops go through a dedicated <code>BulkOperationsService</code> that explicitly documents this bypass. This prevents hidden audit gaps in regulated systems.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 6 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">06</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        Delay ToList() — Keep Work on the Server
+        <span class="cat-pill cat-query">Query Efficiency</span>
+      </div>
+      <div class="rule-sub">IQueryable composition vs IEnumerable — the pipeline boundary</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-memory">Memory Allocation</span>
+      <span class="impact-tag tag-network">Data Transfer</span>
+      <span class="impact-tag tag-cpu">Client-side Processing</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p>Calling <code>ToList()</code> / <code>ToArray()</code> materialises the IQueryable into memory, ending SQL composition. Any LINQ after that point runs in C# on the full dataset. Delaying materialisation keeps the WHERE, SELECT, GROUP BY, ORDER BY in SQL — executed by the database engine on indexed data.</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Problem If Ignored</h4>
+        <ul>
+          <li>Entire table loaded into ASP.NET memory before filtering</li>
+          <li>C# LINQ has no indexes — sequential scan on in-memory list</li>
+          <li>100MB result set transferred for a query that needs 1KB</li>
+          <li>Subtle: calling ToList() inside a helper method breaks composition</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>Materialise Only When</h4>
+        <ul>
+          <li>You need to pass the result outside EF's pipeline</li>
+          <li>You're iterating the result multiple times</li>
+          <li>You're mapping to DTOs after applying all server-side filters</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Real-World Gotcha</h4>
+        <ul>
+          <li>Repository pattern hiding ToList() internally breaks upstream filtering</li>
+          <li>Generic repositories returning <code>IEnumerable&lt;T&gt;</code> instead of <code>IQueryable&lt;T&gt;</code></li>
+          <li>Unit tests pass (small data) — production collapses (full table)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-bad">
+      <div class="code-label">❌ PREMATURE MATERIALISE — full table loaded, then filtered in C#</div>
+      <pre><span class="kw">var</span> allOrders <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>.<span class="fn">ToListAsync</span>(); <span class="cm">// FULL TABLE IN MEMORY</span>
+<span class="kw">var</span> filtered  <span class="op">=</span> allOrders.<span class="fn">Where</span>(o <span class="op">=></span> o.<span class="prop">Status</span> <span class="op">==</span> <span class="tp">OrderStatus</span>.Pending);
+<span class="kw">var</span> paged     <span class="op">=</span> filtered.<span class="fn">Skip</span>(<span class="num">0</span>).<span class="fn">Take</span>(<span class="num">20</span>); <span class="cm">// In-memory, no SQL optimisation</span></pre>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ COMPOSABLE PIPELINE — all work pushed to SQL engine</div>
+      <pre><span class="cm">// Build IQueryable — no SQL executed yet</span>
+<span class="tp">IQueryable</span>&lt;<span class="tp">Order</span>&gt; query <span class="op">=</span> _db.<span class="prop">Orders</span>.<span class="fn">AsNoTracking</span>();
+
+<span class="cm">// Conditionally compose — still IQueryable</span>
+<span class="kw">if</span> (filter.<span class="prop">Status</span>.<span class="fn">HasValue</span>())
+    query <span class="op">=</span> query.<span class="fn">Where</span>(o <span class="op">=></span> o.<span class="prop">Status</span> <span class="op">==</span> filter.<span class="prop">Status</span>);
+
+<span class="kw">if</span> (filter.<span class="prop">CustomerId</span> <span class="op">!=</span> <span class="kw">null</span>)
+    query <span class="op">=</span> query.<span class="fn">Where</span>(o <span class="op">=></span> o.<span class="prop">CustomerId</span> <span class="op">==</span> filter.<span class="prop">CustomerId</span>);
+
+<span class="cm">// Project + paginate BEFORE materialise — all in SQL</span>
+<span class="kw">var</span> result <span class="op">=</span> <span class="kw">await</span> query
+    .<span class="fn">Select</span>(o <span class="op">=></span> <span class="kw">new</span> <span class="tp">OrderDto</span> { <span class="cm">/* ... */</span> })
+    .<span class="fn">OrderByDescending</span>(o <span class="op">=></span> o.<span class="prop">CreatedAt</span>)
+    .<span class="fn">Skip</span>(page <span class="op">*</span> size).<span class="fn">Take</span>(size)
+    .<span class="fn">ToListAsync</span>(); <span class="cm">// ← Only here does SQL execute</span></pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> Repository pattern anti-pattern: never return <code>IEnumerable&lt;T&gt;</code> from a repository for entities — always return <code>IQueryable&lt;T&gt;</code> to allow callers to compose. The materialisation belongs at the Application/Service layer, not the data layer. This is a common senior-level design mistake.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 7 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">07</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        Keyset Pagination vs Offset Pagination
+        <span class="cat-pill cat-query">Query Efficiency</span>
+      </div>
+      <div class="rule-sub">SKIP/TAKE degrades logarithmically — Keyset scales O(log n)</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-query">Query Cost at Scale</span>
+      <span class="impact-tag tag-io">Page Reads</span>
+      <span class="impact-tag tag-cpu">Sort Cost</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p><strong>Offset (SKIP/TAKE):</strong> SQL Server reads and discards the first N rows before returning the page. Page 500 of 20 = discard 10,000 rows. Cost grows with page number. <strong>Keyset:</strong> uses a WHERE clause on the last seen key value — jumps directly to the correct index position. O(log n) regardless of page depth.</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Offset Pagination — Production Problems</h4>
+        <ul>
+          <li>Page 1000 of infinite scroll = 20,000 row discard on every request</li>
+          <li>Deep paging under load causes query timeout cascades</li>
+          <li>"Ghost rows": concurrent inserts cause duplicates/skips across pages</li>
+          <li>Total count query (<code>COUNT(*)</code>) requires full scan</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>Which To Use</h4>
+        <ul>
+          <li><strong>Keyset:</strong> infinite scroll, feeds, real-time lists, high-volume APIs</li>
+          <li><strong>Offset:</strong> admin UIs with explicit page numbers, reports with known small datasets, when you need total count for UI</li>
+          <li>Cursor = keyset with opaque token (hide implementation from API consumers)</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Deployment Impact</h4>
+        <ul>
+          <li>At 1M rows, page 500 with offset: ~2-5s; keyset: &lt;10ms</li>
+          <li>Offset pages under DDoS: trivial to cause DB CPU exhaustion</li>
+          <li>Keyset requires stable sort column — design your schema accordingly</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-bad">
+      <div class="code-label">❌ OFFSET PAGINATION — degrades at scale</div>
+      <pre><span class="cm">// SKIP reads and discards rows — expensive on deep pages</span>
+<span class="kw">var</span> page <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>
+    .<span class="fn">OrderBy</span>(o <span class="op">=></span> o.<span class="prop">Id</span>)
+    .<span class="fn">Skip</span>(pageNumber <span class="op">*</span> pageSize)  <span class="cm">// ← Discards N rows every time</span>
+    .<span class="fn">Take</span>(pageSize)
+    .<span class="fn">ToListAsync</span>();</pre>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ KEYSET PAGINATION — O(log n) constant performance</div>
+      <pre><span class="cm">// First page: no cursor</span>
+<span class="kw">var</span> firstPage <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>
+    .<span class="fn">AsNoTracking</span>()
+    .<span class="fn">OrderBy</span>(o <span class="op">=></span> o.<span class="prop">Id</span>)
+    .<span class="fn">Take</span>(pageSize)
+    .<span class="fn">ToListAsync</span>();
+
+<span class="cm">// Subsequent pages: seek past last seen Id</span>
+<span class="kw">var</span> nextPage <span class="op">=</span> <span class="kw">await</span> _db.<span class="prop">Orders</span>
+    .<span class="fn">AsNoTracking</span>()
+    .<span class="fn">Where</span>(o <span class="op">=></span> o.<span class="prop">Id</span> <span class="op">></span> lastSeenId)  <span class="cm">// Index seek — not scan</span>
+    .<span class="fn">OrderBy</span>(o <span class="op">=></span> o.<span class="prop">Id</span>)
+    .<span class="fn">Take</span>(pageSize)
+    .<span class="fn">ToListAsync</span>();
+
+<span class="cm">// Opaque cursor (hide internal Id from API consumer)</span>
+<span class="kw">var</span> cursor <span class="op">=</span> <span class="tp">Convert</span>.<span class="fn">ToBase64String</span>(
+    <span class="tp">BitConverter</span>.<span class="fn">GetBytes</span>(nextPage.<span class="fn">Last</span>().<span class="prop">Id</span>));</pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> Keyset requires a deterministic stable sort. Use <code>(CreatedAt, Id)</code> composite cursor for time-ordered feeds — CreatedAt can have ties, Id breaks them. Expose as an opaque base64 cursor in your API contract to decouple clients from your internal sort key choice.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 8 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">08</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        Compiled Queries — Eliminate Plan Generation Cost
+        <span class="cat-pill cat-perf">Runtime Perf</span>
+      </div>
+      <div class="rule-sub">Cache the LINQ expression tree compilation for hot paths</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-cpu">CPU — Expression Compilation</span>
+      <span class="impact-tag tag-memory">Delegate Allocation</span>
+      <span class="impact-tag tag-query">Query Plan Cache</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p>Every EF LINQ query is compiled from an expression tree to SQL on first execution — parsing, visiting, parameterising, and caching the plan. For extremely hot paths (auth checks, per-request lookups, health checks), this compilation cost is measurable. <code>EF.CompileAsyncQuery()</code> pre-compiles and caches as a typed delegate, eliminating recompilation entirely.</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Problem If Ignored</h4>
+        <ul>
+          <li>EF's internal query cache has eviction under memory pressure</li>
+          <li>Cold start latency spikes on first request after deployment</li>
+          <li>High-frequency simple lookups (auth tokens, session checks) accumulate compilation overhead</li>
+          <li>Not critical for 99% of queries — target only verified hot paths</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>When Compiled Queries Pay Off</h4>
+        <ul>
+          <li>Authentication/authorisation lookups (every request)</li>
+          <li>Session validation queries</li>
+          <li>Per-entity load in tight loops (import processing)</li>
+          <li>Benchmark first — premature optimisation applies here</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Impact</h4>
+        <ul>
+          <li>Microsecond savings per call — matters at 100K+ RPS</li>
+          <li>Eliminates expression tree GC allocations on hot path</li>
+          <li>Predictable cold-start: all queries pre-compiled at startup</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ COMPILED QUERY — pre-compiled delegate, zero re-compilation</div>
+      <pre><span class="kw">public static class</span> <span class="tp">CompiledQueries</span>
+{
+    <span class="cm">// Compiled once at class initialisation — reused for every call</span>
+    <span class="kw">public static readonly</span> <span class="tp">Func</span>&lt;<span class="tp">AppDbContext</span>, <span class="tp">Guid</span>, <span class="tp">Task</span>&lt;<span class="tp">User</span>?&gt;&gt;
+        GetUserById <span class="op">=</span> <span class="tp">EF</span>.<span class="fn">CompileAsyncQuery</span>(
+            (<span class="tp">AppDbContext</span> db, <span class="tp">Guid</span> id) <span class="op">=></span>
+                db.<span class="prop">Users</span>.<span class="fn">AsNoTracking</span>()
+                        .<span class="fn">FirstOrDefault</span>(u <span class="op">=></span> u.<span class="prop">Id</span> <span class="op">==</span> id));
+
+    <span class="kw">public static readonly</span> <span class="tp">Func</span>&lt;<span class="tp">AppDbContext</span>, <span class="kw">string</span>, <span class="tp">Task</span>&lt;<span class="tp">RefreshToken</span>?&gt;&gt;
+        GetActiveToken <span class="op">=</span> <span class="tp">EF</span>.<span class="fn">CompileAsyncQuery</span>(
+            (<span class="tp">AppDbContext</span> db, <span class="kw">string</span> token) <span class="op">=></span>
+                db.<span class="prop">RefreshTokens</span>
+                  .<span class="fn">AsNoTracking</span>()
+                  .<span class="fn">FirstOrDefault</span>(t <span class="op">=></span> t.<span class="prop">Token</span> <span class="op">==</span> token <span class="op">&&</span> !t.<span class="prop">IsRevoked</span>));
+}
+
+<span class="cm">// Usage — zero expression tree work at call site</span>
+<span class="kw">var</span> user <span class="op">=</span> <span class="kw">await</span> <span class="tp">CompiledQueries</span>.<span class="fn">GetUserById</span>(_db, userId);</pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> EF Core 8+ has improved its internal query cache significantly. Profile with BenchmarkDotNet before committing to compiled queries — the maintenance cost (static coupling, non-composable) is real. Use them where benchmarks prove savings, not by convention.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 9 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">09</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        Disable AutoDetectChangesEnabled for Bulk Writes
+        <span class="cat-pill cat-writes">Bulk Writes</span>
+      </div>
+      <div class="rule-sub">Change detection O(n²) cost — disable it for batch import scenarios</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-cpu">O(n²) Detection Cost</span>
+      <span class="impact-tag tag-memory">Snapshot Overhead</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p>EF calls <code>DetectChanges()</code> automatically before <code>SaveChanges()</code>, before most query executions, and when accessing navigation properties. With 10,000 tracked entities, each <code>DetectChanges()</code> call compares all 10K entity snapshots — O(n) per call, O(n²) in a loop. Disabling it during batch operations and calling manually or chunking dramatically reduces cost.</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Problem If Ignored</h4>
+        <ul>
+          <li>Importing 10K rows with tracking: each Add() triggers DetectChanges</li>
+          <li>Processing becomes exponentially slower as tracked set grows</li>
+          <li>Memory for 10K snapshots: ~40-200MB depending on entity size</li>
+          <li>LOH allocation for large entities → Gen2 GC pauses</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>Pattern: Chunk + Disable + Re-enable</h4>
+        <ul>
+          <li>Disable before bulk AddRange loop</li>
+          <li>Chunk SaveChanges in batches (500-1000 rows)</li>
+          <li>Clear ChangeTracker between chunks to release memory</li>
+          <li>Always re-enable in finally block</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Deployment Impact</h4>
+        <ul>
+          <li>10K row import: 45s with defaults → 3s with disabled tracking</li>
+          <li>Chunking prevents transaction log growth per batch</li>
+          <li>ChangeTracker.Clear() prevents memory leak between chunks</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-bad">
+      <div class="code-label">❌ DEFAULT — DetectChanges O(n²) on every Add()</div>
+      <pre><span class="kw">foreach</span> (<span class="kw">var</span> record <span class="kw">in</span> importedRecords)   <span class="cm">// 50,000 records</span>
+{
+    _db.<span class="prop">Products</span>.<span class="fn">Add</span>(record); <span class="cm">// Each Add triggers DetectChanges on ALL tracked!</span>
+}
+<span class="kw">await</span> _db.<span class="fn">SaveChangesAsync</span>();</pre>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ DISABLED + CHUNKED — linear cost, bounded memory</div>
+      <pre>_db.<span class="prop">ChangeTracker</span>.<span class="prop">AutoDetectChangesEnabled</span> <span class="op">=</span> <span class="kw">false</span>;
+<span class="kw">try</span>
+{
+    <span class="kw">const int</span> chunkSize <span class="op">=</span> <span class="num">500</span>;
+    <span class="kw">var</span> chunks <span class="op">=</span> importedRecords.<span class="fn">Chunk</span>(chunkSize);
+
+    <span class="kw">foreach</span> (<span class="kw">var</span> chunk <span class="kw">in</span> chunks)
+    {
+        <span class="kw">await</span> _db.<span class="prop">Products</span>.<span class="fn">AddRangeAsync</span>(chunk); <span class="cm">// No DetectChanges per item</span>
+        <span class="kw">await</span> _db.<span class="fn">SaveChangesAsync</span>();
+        _db.<span class="prop">ChangeTracker</span>.<span class="fn">Clear</span>();  <span class="cm">// Release snapshot memory between chunks</span>
+    }
+}
+<span class="kw">finally</span>
+{
+    _db.<span class="prop">ChangeTracker</span>.<span class="prop">AutoDetectChangesEnabled</span> <span class="op">=</span> <span class="kw">true</span>;  <span class="cm">// Always restore</span>
+}</pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> For truly massive imports (&gt;100K rows), bypass EF entirely and use Rule #10 (SqlBulkCopy). This rule targets medium-scale bulk ops (1K–50K) where you still want EF's model validation, interceptors, and value converters to run.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 10 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">10</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        SqlBulkCopy — Maximum Insert Throughput
+        <span class="cat-pill cat-writes">Bulk Writes</span>
+      </div>
+      <div class="rule-sub">Bypasses the entire SQL INSERT pipeline — raw bcp-equivalent speed</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-io">Minimal Log I/O</span>
+      <span class="impact-tag tag-memory">DataReader Streaming</span>
+      <span class="impact-tag tag-cpu">No Row-by-Row Parsing</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p><code>SqlBulkCopy</code> uses SQL Server's TDS bulk load protocol — the same mechanism as the <code>bcp</code> utility and SSIS. It streams data directly into the table, bypassing INSERT statement parsing, plan compilation, and individual row processing. Minimally logged in simple recovery model — transaction log impact is a fraction of equivalent INSERTs.</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Problem If Ignored</h4>
+        <ul>
+          <li>100K INSERT statements: minutes; SqlBulkCopy: seconds</li>
+          <li>Each INSERT: parse SQL, compile plan, write to log, commit</li>
+          <li>EF AddRange still emits individual or batched INSERTs — not bulk</li>
+          <li>Transaction log fills during large imports without bulk ops</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>Use SqlBulkCopy When</h4>
+        <ul>
+          <li>Importing &gt;50K rows</li>
+          <li>ETL/data migration pipelines</li>
+          <li>IoT/telemetry high-frequency writes to staging tables</li>
+          <li>NOT when: you need EF interceptors, value converters, domain events</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Deployment Impact</h4>
+        <ul>
+          <li>1M rows: SqlBulkCopy ~10-30s; EF AddRange ~10-30 min</li>
+          <li>Transaction log: minimally logged = smaller backup window</li>
+          <li>Requires table lock by default — schedule during off-peak</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ SqlBulkCopy — production-grade with DataReader streaming</div>
+      <pre><span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">BulkInsertOrdersAsync</span>(<span class="tp">IEnumerable</span>&lt;<span class="tp">Order</span>&gt; orders)
+{
+    <span class="kw">var</span> table <span class="op">=</span> <span class="fn">BuildDataTable</span>(orders); <span class="cm">// Map entities to DataTable</span>
+
+    <span class="kw">using var</span> conn <span class="op">=</span> <span class="kw">new</span> <span class="tp">SqlConnection</span>(_connectionString);
+    <span class="kw">await</span> conn.<span class="fn">OpenAsync</span>();
+
+    <span class="kw">using var</span> bulkCopy <span class="op">=</span> <span class="kw">new</span> <span class="tp">SqlBulkCopy</span>(conn,
+        <span class="tp">SqlBulkCopyOptions</span>.TableLock <span class="op">|</span>        <span class="cm">// Lock table for duration</span>
+        <span class="tp">SqlBulkCopyOptions</span>.UseInternalTransaction, <span class="kw">null</span>)
+    {
+        DestinationTableName <span class="op">=</span> <span class="str">"dbo.Orders"</span>,
+        BatchSize            <span class="op">=</span> <span class="num">1000</span>,           <span class="cm">// Commit every 1000 rows</span>
+        BulkCopyTimeout      <span class="op">=</span> <span class="num">300</span>             <span class="cm">// 5 min timeout</span>
+    };
+
+    <span class="cm">// Explicit column mapping — protects against schema changes</span>
+    bulkCopy.<span class="fn">ColumnMappings</span>.<span class="fn">Add</span>(<span class="str">"Id"</span>,         <span class="str">"Id"</span>);
+    bulkCopy.<span class="fn">ColumnMappings</span>.<span class="fn">Add</span>(<span class="str">"CustomerId"</span>, <span class="str">"CustomerId"</span>);
+    bulkCopy.<span class="fn">ColumnMappings</span>.<span class="fn">Add</span>(<span class="str">"TotalAmount"</span>,<span class="str">"TotalAmount"</span>);
+    bulkCopy.<span class="fn">ColumnMappings</span>.<span class="fn">Add</span>(<span class="str">"CreatedAt"</span>,  <span class="str">"CreatedAt"</span>);
+
+    <span class="kw">await</span> bulkCopy.<span class="fn">WriteToServerAsync</span>(table);
+}
+
+<span class="cm">// EFCore.BulkExtensions library — wraps SqlBulkCopy with EF model awareness</span>
+<span class="kw">await</span> _db.<span class="fn">BulkInsertAsync</span>(orders, options <span class="op">=></span> {
+    options.<span class="prop">BatchSize</span>    <span class="op">=</span> <span class="num">2000</span>;
+    options.<span class="prop">SetOutputIdentity</span> <span class="op">=</span> <span class="kw">true</span>;  <span class="cm">// Get back DB-generated IDs</span>
+});</pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> Consider <code>EFCore.BulkExtensions</code> (free, open-source) which wraps SqlBulkCopy and respects EF model configuration (value converters, column names, shadow properties). For Postgres, use <code>COPY</code> via Npgsql's <code>BeginBinaryImport</code>. For Azure SQL, test with bulk insert against Hyperscale — behaviour differs from on-prem.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RULE 11 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="rule-card">
+  <div class="rule-header" onclick="toggle(this)">
+    <div class="rule-number">11</div>
+    <div class="rule-title-block">
+      <div class="rule-title">
+        SQL Inspection — ToQueryString() &amp; Logging
+        <span class="cat-pill cat-debug">Observability</span>
+      </div>
+      <div class="rule-sub">Never trust LINQ — always verify the generated SQL</div>
+    </div>
+    <button class="toggle-btn">＋</button>
+  </div>
+  <div class="rule-body">
+    <div class="impact-row">
+      <span class="impact-tag tag-query">Query Verification</span>
+      <span class="impact-tag tag-io">Plan Analysis</span>
+      <span class="impact-tag tag-cpu">N+1 Detection</span>
+    </div>
+    <div class="section-grid">
+      <div class="info-box box-concept">
+        <h4>Core Concept</h4>
+        <p><code>ToQueryString()</code> returns the parameterised SQL EF would generate without executing it — use during development and testing. SQL logging via <code>EnableSensitiveDataLogging()</code> + structured logging captures every query at runtime. Together these give you full observability into EF's SQL emission without an external profiler.</p>
+      </div>
+      <div class="info-box box-problem">
+        <h4>Problem If Ignored</h4>
+        <ul>
+          <li>Client-side evaluation silently moves WHERE to C# (EF3 removed this but subtleties remain)</li>
+          <li>N+1 queries invisible without SQL inspection</li>
+          <li>Cartesian explosion from multiple Includes missed until profiling</li>
+          <li>Parameterisation failures cause SQL injection vectors or plan cache misses</li>
+        </ul>
+      </div>
+      <div class="info-box box-when">
+        <h4>Logging Strategy by Environment</h4>
+        <ul>
+          <li><strong>Dev:</strong> Console + <code>EnableSensitiveDataLogging()</code></li>
+          <li><strong>Staging:</strong> Structured logs (Seq/Elastic) with slow query threshold</li>
+          <li><strong>Prod:</strong> Log queries &gt; 500ms only + APM (Application Insights / Datadog)</li>
+        </ul>
+      </div>
+      <div class="info-box box-impact">
+        <h4>Deployment Impact</h4>
+        <ul>
+          <li>Full query logging in prod: significant performance overhead — DON'T</li>
+          <li>EnableSensitiveDataLogging() in prod = data breach risk — NEVER</li>
+          <li>Slow query threshold logging = high signal, low noise</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-good">
+      <div class="code-label">✅ QUERY INSPECTION — development + production safe patterns</div>
+      <pre><span class="cm">// ─── Dev: Inspect without executing ──────────────────</span>
+<span class="kw">var</span> query <span class="op">=</span> _db.<span class="prop">Orders</span>
+    .<span class="fn">Where</span>(o <span class="op">=></span> o.<span class="prop">CustomerId</span> <span class="op">==</span> customerId)
+    .<span class="fn">Include</span>(o <span class="op">=></span> o.<span class="prop">Items</span>);
+
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(query.<span class="fn">ToQueryString</span>()); <span class="cm">// Inspect SQL in dev/tests</span>
+
+<span class="cm">// ─── DI Registration: tiered logging ─────────────────</span>
+services.<span class="fn">AddDbContext</span>&lt;<span class="tp">AppDbContext</span>&gt;(options <span class="op">=></span>
+{
+    options.<span class="fn">UseSqlServer</span>(connectionString)
+           .<span class="fn">LogTo</span>(
+               action:      sql <span class="op">=></span> logger.<span class="fn">LogDebug</span>(sql),
+               categories:  [<span class="tp">DbLoggerCategory</span>.Database.Command.Name],
+               minimumLevel: env.IsDevelopment()
+                             ? <span class="tp">LogLevel</span>.Information
+                             : <span class="tp">LogLevel</span>.Warning)
+           .<span class="fn">EnableDetailedErrors</span>(env.IsDevelopment())
+           .<span class="fn">EnableSensitiveDataLogging</span>(env.IsDevelopment()); <span class="cm">// NEVER prod!</span>
+});
+
+<span class="cm">// ─── Slow query detection (prod-safe) ────────────────</span>
+options.<span class="fn">AddInterceptors</span>(<span class="kw">new</span> <span class="tp">SlowQueryInterceptor</span>(<span class="prop">thresholdMs</span>: <span class="num">500</span>));
+
+<span class="cm">// SlowQueryInterceptor — logs queries exceeding threshold</span>
+<span class="kw">public class</span> <span class="tp">SlowQueryInterceptor</span> : <span class="tp">DbCommandInterceptor</span>
+{
+    <span class="kw">public override</span> <span class="tp">DbDataReader</span> <span class="fn">ReaderExecuted</span>(<span class="tp">DbCommand</span> cmd,
+        <span class="tp">CommandExecutedEventData</span> evt, <span class="tp">DbDataReader</span> result)
+    {
+        <span class="kw">if</span> (evt.<span class="prop">Duration</span>.<span class="prop">TotalMilliseconds</span> <span class="op">></span> _thresholdMs)
+            _logger.<span class="fn">LogWarning</span>(<span class="str">"SLOW QUERY {Duration}ms: {Sql}"</span>,
+                evt.<span class="prop">Duration</span>.<span class="prop">TotalMilliseconds</span>,
+                cmd.<span class="prop">CommandText</span>[..<span class="tp">Math</span>.<span class="fn">Min</span>(<span class="num">500</span>, cmd.<span class="prop">CommandText</span>.<span class="prop">Length</span>)]);
+        <span class="kw">return</span> result;
+    }
+}</pre>
+    </div>
+    <div class="arch-note"><strong>ARCHITECT NOTE ›</strong> Integrate with OpenTelemetry: EF Core emits <code>System.Diagnostics.Activity</code> spans for every query. Configure OTEL to export to Jaeger/Datadog/Application Insights — you get distributed traces from HTTP request → EF query → SQL execution → network → DB response with zero additional instrumentation code.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SUMMARY TABLE -->
+<!-- ══════════════════════════════════════════════════ -->
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1.5rem;margin-top:1rem;">
+  <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:1.25rem;color:var(--accent);">Quick Reference — Impact Matrix</div>
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;font-family:'JetBrains Mono',monospace;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:8px 12px;color:var(--muted);">#</th>
+          <th style="text-align:left;padding:8px 12px;color:var(--muted);">Rule</th>
+          <th style="text-align:left;padding:8px 12px;color:var(--muted);">Category</th>
+          <th style="text-align:left;padding:8px 12px;color:var(--muted);">Primary Metric</th>
+          <th style="text-align:left;padding:8px 12px;color:var(--muted);">Risk If Skipped</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">01</td><td style="padding:8px 12px;">AsNoTracking()</td><td style="padding:8px 12px;color:var(--accent2);">Query</td><td style="padding:8px 12px;">Memory ↓ 50%</td><td style="padding:8px 12px;color:var(--danger);">GC pressure, LOH bloat</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">02</td><td style="padding:8px 12px;">N+1 / Include()</td><td style="padding:8px 12px;color:var(--accent2);">Query</td><td style="padding:8px 12px;">DB round-trips ↓ 99%</td><td style="padding:8px 12px;color:var(--danger);">Connection pool exhaustion</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">03</td><td style="padding:8px 12px;">Select() projection</td><td style="padding:8px 12px;color:var(--accent2);">Query</td><td style="padding:8px 12px;">Payload ↓ 80%+</td><td style="padding:8px 12px;color:var(--warn);">Bandwidth waste, BLOB transfer</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">04</td><td style="padding:8px 12px;">Indexes</td><td style="padding:8px 12px;color:var(--accent3);">Schema</td><td style="padding:8px 12px;">Query time ↓ 100x+</td><td style="padding:8px 12px;color:var(--danger);">Full scans, lock escalation</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">05</td><td style="padding:8px 12px;">ExecuteUpdate/Delete</td><td style="padding:8px 12px;color:var(--accent4);">Writes</td><td style="padding:8px 12px;">1 SQL vs N UPDATEs</td><td style="padding:8px 12px;color:var(--danger);">Transaction log explosion</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">06</td><td style="padding:8px 12px;">Delay ToList()</td><td style="padding:8px 12px;color:var(--accent2);">Query</td><td style="padding:8px 12px;">Full table scan avoided</td><td style="padding:8px 12px;color:var(--danger);">Memory OOM in prod</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">07</td><td style="padding:8px 12px;">Keyset pagination</td><td style="padding:8px 12px;color:var(--accent2);">Query</td><td style="padding:8px 12px;">O(log n) vs O(n)</td><td style="padding:8px 12px;color:var(--warn);">Deep page timeouts</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">08</td><td style="padding:8px 12px;">Compiled queries</td><td style="padding:8px 12px;color:var(--accent);">Runtime</td><td style="padding:8px 12px;">μs savings at high RPS</td><td style="padding:8px 12px;color:var(--muted);">Low — only hot paths</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">09</td><td style="padding:8px 12px;">Disable AutoDetect</td><td style="padding:8px 12px;color:var(--accent4);">Writes</td><td style="padding:8px 12px;">Batch: 45s → 3s</td><td style="padding:8px 12px;color:var(--danger);">O(n²) CPU in bulk ops</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">10</td><td style="padding:8px 12px;">SqlBulkCopy</td><td style="padding:8px 12px;color:var(--accent4);">Writes</td><td style="padding:8px 12px;">1M rows: 30min → 30s</td><td style="padding:8px 12px;color:var(--danger);">Import timeouts, log full</td></tr>
+        <tr><td style="padding:8px 12px;color:var(--muted);">11</td><td style="padding:8px 12px;">SQL Inspection</td><td style="padding:8px 12px;color:var(--danger);">Observability</td><td style="padding:8px 12px;">Catches N+1, cartesian</td><td style="padding:8px 12px;color:var(--warn);">Silent prod degradation</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+function toggle(header) {
+  const body = header.nextElementSibling;
+  const btn  = header.querySelector('.toggle-btn');
+  const open = body.classList.toggle('open');
+  btn.textContent = open ? '－' : '＋';
+}
+// Open first card by default
+document.querySelector('.rule-header').click();
+</script>
+</body>
+</html>
