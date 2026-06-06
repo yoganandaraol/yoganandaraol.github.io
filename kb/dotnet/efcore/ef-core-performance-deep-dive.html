@@ -345,57 +345,57 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   </div>
 
   <span class="nav-section">Overview</span>
-  <a class="nav-link active" onclick="scrollTo('overview')">11 Rules Summary</a>
-  <a class="nav-link" onclick="scrollTo('matrix')">Impact Matrix</a>
+  <a class="nav-link active" onclick="navTo('overview', this)">11 Rules Summary</a>
+  <a class="nav-link" onclick="navTo('matrix', this)">Impact Matrix</a>
 
   <span class="nav-section">Query Efficiency</span>
-  <a class="nav-link" onclick="scrollTo('rule01')">
+  <a class="nav-link" onclick="navTo('rule01', this)">
     <span class="nav-num">01</span> AsNoTracking()
     <span class="badge badge-query">Query</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('rule02')">
+  <a class="nav-link" onclick="navTo('rule02', this)">
     <span class="nav-num">02</span> N+1 / Include()
     <span class="badge badge-query">Query</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('rule03')">
+  <a class="nav-link" onclick="navTo('rule03', this)">
     <span class="nav-num">03</span> Select() Projection
     <span class="badge badge-query">Query</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('rule06')">
+  <a class="nav-link" onclick="navTo('rule06', this)">
     <span class="nav-num">06</span> Delay ToList()
     <span class="badge badge-query">Query</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('rule07')">
+  <a class="nav-link" onclick="navTo('rule07', this)">
     <span class="nav-num">07</span> Keyset Pagination
     <span class="badge badge-query">Query</span>
   </a>
 
   <span class="nav-section">Bulk Writes</span>
-  <a class="nav-link" onclick="scrollTo('rule05')">
+  <a class="nav-link" onclick="navTo('rule05', this)">
     <span class="nav-num">05</span> ExecuteUpdate/Delete
     <span class="badge badge-writes">Writes</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('rule09')">
+  <a class="nav-link" onclick="navTo('rule09', this)">
     <span class="nav-num">09</span> Disable AutoDetect
     <span class="badge badge-writes">Writes</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('rule10')">
+  <a class="nav-link" onclick="navTo('rule10', this)">
     <span class="nav-num">10</span> SqlBulkCopy
     <span class="badge badge-writes">Writes</span>
   </a>
 
   <span class="nav-section">Schema &amp; Runtime</span>
-  <a class="nav-link" onclick="scrollTo('rule04')">
+  <a class="nav-link" onclick="navTo('rule04', this)">
     <span class="nav-num">04</span> Indexes
     <span class="badge badge-schema">Schema</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('rule08')">
+  <a class="nav-link" onclick="navTo('rule08', this)">
     <span class="nav-num">08</span> Compiled Queries
     <span class="badge badge-perf">Perf</span>
   </a>
 
   <span class="nav-section">Observability</span>
-  <a class="nav-link" onclick="scrollTo('rule11')">
+  <a class="nav-link" onclick="navTo('rule11', this)">
     <span class="nav-num">11</span> SQL Inspection
     <span class="badge badge-debug">Debug</span>
   </a>
@@ -425,27 +425,27 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   <p class="section-desc">Five categories. Every rule targets a specific failure mode that costs you throughput, memory, or developer time in production.</p>
 
   <div class="legend-grid">
-    <div class="legend-card" onclick="scrollTo('rule01')">
+    <div class="legend-card" onclick="navTo('rule01', this)">
       <div class="lc-dot" style="background:var(--c-query)"></div>
       <div class="lc-name" style="color:var(--c-query)">Query Efficiency</div>
       <div class="lc-count">Rules 01 02 03 06 07</div>
     </div>
-    <div class="legend-card" onclick="scrollTo('rule05')">
+    <div class="legend-card" onclick="navTo('rule05', this)">
       <div class="lc-dot" style="background:var(--c-writes)"></div>
       <div class="lc-name" style="color:var(--c-writes)">Bulk Writes</div>
       <div class="lc-count">Rules 05 09 10</div>
     </div>
-    <div class="legend-card" onclick="scrollTo('rule04')">
+    <div class="legend-card" onclick="navTo('rule04', this)">
       <div class="lc-dot" style="background:var(--c-schema)"></div>
       <div class="lc-name" style="color:var(--c-schema)">Schema &amp; Indexing</div>
       <div class="lc-count">Rule 04</div>
     </div>
-    <div class="legend-card" onclick="scrollTo('rule08')">
+    <div class="legend-card" onclick="navTo('rule08', this)">
       <div class="lc-dot" style="background:var(--c-perf)"></div>
       <div class="lc-name" style="color:var(--c-perf)">Runtime Perf</div>
       <div class="lc-count">Rule 08</div>
     </div>
-    <div class="legend-card" onclick="scrollTo('rule11')">
+    <div class="legend-card" onclick="navTo('rule11', this)">
       <div class="lc-dot" style="background:var(--c-debug)"></div>
       <div class="lc-name" style="color:var(--c-debug)">Observability</div>
       <div class="lc-count">Rule 11</div>
@@ -1546,12 +1546,14 @@ options.<span class="fn">AddInterceptors</span>(<span class="kw">new</span> <spa
 </div><!-- /.page -->
 
 <script>
-function scrollTo(id) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function navTo(id, el) {
+  const target = document.getElementById(id);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   // update active nav link
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  if (el && el.classList.contains('nav-link')) {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+  }
 }
 </script>
 </body>

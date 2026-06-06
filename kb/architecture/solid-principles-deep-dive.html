@@ -363,35 +363,35 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   </div>
 
   <span class="nav-section">Overview</span>
-  <a class="nav-link active" onclick="scrollTo('overview')">TL;DR &amp; Evolution</a>
-  <a class="nav-link" onclick="scrollTo('overview')">Architecture Impact</a>
+  <a class="nav-link active" onclick="navTo('overview', this)">TL;DR &amp; Evolution</a>
+  <a class="nav-link" onclick="navTo('overview', this)">Architecture Impact</a>
 
   <span class="nav-section">Principles</span>
-  <a class="nav-link" onclick="scrollTo('srp')">
+  <a class="nav-link" onclick="navTo('srp', this)">
     <span style="color:var(--accent);font-weight:700">S</span> Single Responsibility
     <span class="badge">SRP</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('ocp')">
+  <a class="nav-link" onclick="navTo('ocp', this)">
     <span style="color:var(--teal);font-weight:700">O</span> Open/Closed
     <span class="badge">OCP</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('lsp')">
+  <a class="nav-link" onclick="navTo('lsp', this)">
     <span style="color:var(--green);font-weight:700">L</span> Liskov Substitution
     <span class="badge">LSP</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('isp')">
+  <a class="nav-link" onclick="navTo('isp', this)">
     <span style="color:var(--amber);font-weight:700">I</span> Interface Segregation
     <span class="badge">ISP</span>
   </a>
-  <a class="nav-link" onclick="scrollTo('dip')">
+  <a class="nav-link" onclick="navTo('dip', this)">
     <span style="color:var(--pink);font-weight:700">D</span> Dependency Inversion
     <span class="badge">DIP</span>
   </a>
 
   <span class="nav-section">Advanced</span>
-  <a class="nav-link" onclick="scrollTo('interactions')">Principle Interactions</a>
-  <a class="nav-link" onclick="scrollTo('antilib')">Anti-Library</a>
-  <a class="nav-link" onclick="scrollTo('quickref')">Quick Reference</a>
+  <a class="nav-link" onclick="navTo('interactions', this)">Principle Interactions</a>
+  <a class="nav-link" onclick="navTo('antilib', this)">Anti-Library</a>
+  <a class="nav-link" onclick="navTo('quickref', this)">Quick Reference</a>
 </nav>
 
 <!-- MAIN -->
@@ -460,27 +460,27 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
   <!-- PRINCIPLES GRID -->
   <div class="principles-grid">
-    <div class="principle-card c-srp" onclick="scrollTo('srp')">
+    <div class="principle-card c-srp" onclick="navTo('srp', this)">
       <div class="letter">S</div>
       <div class="name">Single Responsibility</div>
       <div class="tagline">One reason to change</div>
     </div>
-    <div class="principle-card c-ocp" onclick="scrollTo('ocp')">
+    <div class="principle-card c-ocp" onclick="navTo('ocp', this)">
       <div class="letter">O</div>
       <div class="name">Open/Closed</div>
       <div class="tagline">Open for extension, closed for modification</div>
     </div>
-    <div class="principle-card c-lsp" onclick="scrollTo('lsp')">
+    <div class="principle-card c-lsp" onclick="navTo('lsp', this)">
       <div class="letter">L</div>
       <div class="name">Liskov Substitution</div>
       <div class="tagline">Subtypes must be substitutable</div>
     </div>
-    <div class="principle-card c-isp" onclick="scrollTo('isp')">
+    <div class="principle-card c-isp" onclick="navTo('isp', this)">
       <div class="letter">I</div>
       <div class="name">Interface Segregation</div>
       <div class="tagline">No client forced to depend on methods it doesn't use</div>
     </div>
-    <div class="principle-card c-dip" onclick="scrollTo('dip')">
+    <div class="principle-card c-dip" onclick="navTo('dip', this)">
       <div class="letter">D</div>
       <div class="name">Dependency Inversion</div>
       <div class="tagline">Depend on abstractions, not concretions</div>
@@ -1529,10 +1529,13 @@ mermaid.initialize({
   }
 });
 
-function scrollTo(id) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+function navTo(id, triggerEl) {
+  const target = document.getElementById(id);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (triggerEl && triggerEl.classList.contains('nav-link')) {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    triggerEl.classList.add('active');
+  }
 }
 </script>
 </body>
