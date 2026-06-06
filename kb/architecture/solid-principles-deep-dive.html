@@ -65,6 +65,16 @@ body {
   line-height: 1.3;
 }
 .sidebar-logo span { color: var(--accent); }
+.sidebar-logo a {
+  display: block;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  text-decoration: none;
+  margin-top: 0.5rem;
+  letter-spacing: 0.05em;
+}
+.sidebar-logo a:hover { color: var(--accent); }
 .nav-section { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 1rem 0 0.4rem; font-weight: 600; }
 .nav-link {
   display: flex; align-items: center; gap: 8px;
@@ -348,7 +358,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 <!-- SIDEBAR -->
 <nav class="sidebar">
-  <div class="sidebar-logo">.NET Architect<br><span>SOLID Principles</span></div>
+  <div class="sidebar-logo">.NET Architect<br><span>SOLID Principles</span>
+    <a href="../index.html">← Knowledge Base</a>
+  </div>
 
   <span class="nav-section">Overview</span>
   <a class="nav-link active" onclick="scrollTo('overview')">TL;DR &amp; Evolution</a>
