@@ -4,36 +4,33 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Knowledge Base — Yogananda Rao Locherla</title>
+<link rel="stylesheet" href="assets/kb.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
-
+  /* ── Index-specific token overrides ─────────────────────────────────
+     The index uses its own surface/border palette (slightly darker than
+     article pages) and remaps the accent colours to KB category colours.
+     These declarations appear after kb.css so they win the cascade.      */
   :root {
-    --bg: #07090d;
+    --bg:      #07090d;
     --surface: #0f1117;
-    --surface2: #161a23;
-    --surface3: #1c2130;
-    --border: #1e2535;
+    --surface2:#161a23;
+    --surface3:#1c2130;
+    --border:  #1e2535;
     --border2: #252d3d;
-    --accent: #f5a623;
-    --accent2: #4fc3f7;
-    --accent3: #a78bfa;
-    --accent4: #34d399;
-    --accent5: #f87171;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --muted2: #94a3b8;
+    --muted:   #64748b;
+    --muted2:  #94a3b8;
+    /* category accent palette for the KB landing page */
+    --kb-dotnet:   var(--accent2);  /* purple  */
+    --kb-arch:     var(--amber);    /* gold    */
+    --kb-ai:       var(--green);    /* green   */
+    --kb-frontend: var(--teal);     /* cyan    */
+    --kb-brand:    var(--accent);   /* blue    */
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
     font-size: 14px;
     line-height: 1.7;
-    min-height: 100vh;
   }
-  a { text-decoration: none; color: inherit; }
 
   /* ── TOP NAV ── */
   nav {
@@ -46,13 +43,13 @@
     height: 52px;
   }
   .nav-logo {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 13px; font-weight: 700;
-    color: var(--accent); letter-spacing: 0.05em;
+    color: var(--kb-brand); letter-spacing: 0.05em;
     display: flex; align-items: center; gap: 8px;
   }
   .nav-logo span { color: var(--muted2); font-weight: 400; }
-  .nav-links { display: flex; gap: 1.5rem; font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .nav-links { display: flex; gap: 1.5rem; font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
   .nav-links a:hover { color: var(--text); }
 
   /* ── HERO ── */
@@ -64,29 +61,29 @@
   .hero::before {
     content: ''; position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse at 20% 50%, rgba(167,139,250,0.05) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 20%, rgba(79,195,247,0.05) 0%, transparent 60%),
-      radial-gradient(ellipse at 50% 100%, rgba(245,166,35,0.04) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 50%, rgba(108,143,255,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(167,139,250,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 100%, rgba(251,191,36,0.04) 0%, transparent 50%);
     pointer-events: none;
   }
   .hero-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--accent); margin-bottom: 1rem;
+    color: var(--kb-brand); margin-bottom: 1rem;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .hero-eyebrow::before, .hero-eyebrow::after {
     content: ''; display: block; width: 32px; height: 1px;
-    background: var(--accent); opacity: 0.4;
+    background: var(--kb-brand); opacity: 0.4;
   }
   .hero h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800;
+    font-family: var(--font-head);
+    font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700;
     letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 1rem;
   }
   .hero h1 em {
-    font-style: normal;
-    background: linear-gradient(135deg, var(--accent2) 0%, var(--accent3) 100%);
+    font-style: italic;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
   .hero p { color: var(--muted2); font-size: 15px; max-width: 520px; margin: 0 auto 2rem; }
@@ -100,14 +97,14 @@
   #search-input {
     width: 100%; background: var(--surface2); border: 1px solid var(--border2);
     border-radius: 8px; padding: 13px 16px 13px 44px;
-    font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text); outline: none;
+    font-family: var(--font-body); font-size: 14px; color: var(--text); outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
   #search-input::placeholder { color: var(--muted); }
-  #search-input:focus { border-color: var(--accent3); box-shadow: 0 0 0 3px rgba(167,139,250,0.1); }
+  #search-input:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(167,139,250,0.1); }
   .search-kbd {
     position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
+    font-family: var(--font-mono); font-size: 10px; color: var(--muted);
     background: var(--surface3); border: 1px solid var(--border2);
     padding: 2px 7px; border-radius: 3px;
   }
@@ -118,45 +115,45 @@
     padding: 1.25rem 2rem; border-bottom: 1px solid var(--border);
     background: var(--surface);
   }
-  .stat { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
-  .stat-num { font-size: 18px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--text); }
+  .stat { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+  .stat-num { font-size: 18px; font-weight: 700; font-family: var(--font-head); color: var(--text); }
 
-  /* ── LAYOUT ── */
+  /* ── PAGE LAYOUT (index-specific grid, not .page flex) ── */
   .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 200px); }
-  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } .sidebar { display: none; } }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } .kb-sidebar { display: none; } }
 
-  /* ── SIDEBAR ── */
-  .sidebar {
+  /* ── KB SIDEBAR (index-specific, separate from article .sidebar) ── */
+  .kb-sidebar {
     border-right: 1px solid var(--border);
     padding: 1.5rem 0; position: sticky; top: 52px;
     height: calc(100vh - 52px); overflow-y: auto;
     scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
   }
-  .sidebar-section { margin-bottom: 0.5rem; }
-  .sidebar-heading {
-    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  .kb-sidebar-section { margin-bottom: 0.5rem; }
+  .kb-sidebar-heading {
+    font-family: var(--font-mono); font-size: 9px;
     letter-spacing: 0.15em; text-transform: uppercase;
     color: var(--muted); padding: 0.5rem 1.25rem; margin-top: 0.75rem;
   }
-  .sidebar-item {
+  .kb-sidebar-item {
     display: flex; align-items: center; gap: 8px;
     padding: 6px 1.25rem; font-size: 12.5px; color: var(--muted2);
     cursor: pointer; transition: background 0.15s, color 0.15s;
     border-left: 2px solid transparent;
   }
-  .sidebar-item:hover { background: var(--surface2); color: var(--text); }
-  .sidebar-item.active { background: var(--surface2); color: var(--text); border-left-color: var(--accent); }
-  .sidebar-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .sidebar-count {
-    margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  .kb-sidebar-item:hover { background: var(--surface2); color: var(--text); }
+  .kb-sidebar-item.active { background: var(--surface2); color: var(--text); border-left-color: var(--kb-brand); }
+  .kb-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .kb-count {
+    margin-left: auto; font-family: var(--font-mono); font-size: 10px;
     background: var(--surface3); border: 1px solid var(--border2);
     padding: 1px 6px; border-radius: 10px; color: var(--muted);
   }
-  .sidebar-dot.d-dotnet  { background: var(--accent3); }
-  .sidebar-dot.d-arch    { background: var(--accent); }
-  .sidebar-dot.d-ai      { background: var(--accent4); }
-  .sidebar-dot.d-frontend{ background: var(--accent2); }
-  .sidebar-dot.d-upcoming{ background: var(--muted); }
+  .kb-dot.d-dotnet   { background: var(--kb-dotnet); }
+  .kb-dot.d-arch     { background: var(--kb-arch); }
+  .kb-dot.d-ai       { background: var(--kb-ai); }
+  .kb-dot.d-frontend { background: var(--kb-frontend); }
+  .kb-dot.d-upcoming { background: var(--muted); }
 
   /* ── CONTENT ── */
   .content { padding: 2rem 2.5rem 4rem; max-width: 900px; }
@@ -171,11 +168,11 @@
   }
   .cat-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
   .cat-title-block { flex: 1; }
-  .cat-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; }
+  .cat-title { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; }
   .cat-desc { font-size: 12px; color: var(--muted); margin-top: 1px; }
-  .cat-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 9px; border-radius: 10px; font-weight: 600; }
+  .cat-badge { font-family: var(--font-mono); font-size: 10px; padding: 2px 9px; border-radius: 10px; font-weight: 600; }
 
-  /* ── ARTICLE CARD (published) ── */
+  /* ── ARTICLE CARD ── */
   .article-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
   .article-card {
     background: var(--surface); border: 1px solid var(--border);
@@ -191,80 +188,44 @@
   .article-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
   .article-card:hover::before { opacity: 1; }
   .article-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-  .article-tag {
-    font-family: 'JetBrains Mono', monospace; font-size: 10px;
-    padding: 2px 8px; border-radius: 3px; font-weight: 600;
-    letter-spacing: 0.05em; white-space: nowrap;
-  }
-  .article-status {
-    font-family: 'JetBrains Mono', monospace; font-size: 9px;
-    padding: 2px 7px; border-radius: 10px; letter-spacing: 0.08em; white-space: nowrap;
-  }
-  .status-published { background: rgba(52,211,153,0.1); color: var(--accent4); border: 1px solid rgba(52,211,153,0.2); }
-  .article-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; line-height: 1.3; color: var(--text); }
+  .article-tag { font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 3px; font-weight: 600; letter-spacing: 0.05em; white-space: nowrap; }
+  .article-status { font-family: var(--font-mono); font-size: 9px; padding: 2px 7px; border-radius: 10px; letter-spacing: 0.08em; white-space: nowrap; }
+  .status-published { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+  .article-title { font-family: var(--font-head); font-size: 0.95rem; font-weight: 700; line-height: 1.3; color: var(--text); }
   .article-desc { font-size: 12.5px; color: var(--muted2); line-height: 1.6; flex: 1; }
-  .article-meta {
-    display: flex; align-items: center; gap: 10px;
-    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
-    padding-top: 0.5rem; border-top: 1px solid var(--border);
-  }
+  .article-meta { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 10px; color: var(--muted); padding-top: 0.5rem; border-top: 1px solid var(--border); }
   .article-meta-dot { color: var(--border2); }
 
-  /* ── CATEGORY COLOR THEMES ── */
+  /* ── CATEGORY COLOUR THEMES ── */
   .c-dotnet .cat-icon  { background: rgba(167,139,250,0.1); }
-  .c-dotnet .cat-title { color: var(--accent3); }
-  .c-dotnet .cat-badge { background: rgba(167,139,250,0.1); color: var(--accent3); border: 1px solid rgba(167,139,250,0.2); }
-  .c-dotnet .article-card::before { background: linear-gradient(90deg, var(--accent3), transparent); }
-  .c-dotnet .article-tag { background: rgba(167,139,250,0.1); color: var(--accent3); border: 1px solid rgba(167,139,250,0.2); }
+  .c-dotnet .cat-title { color: var(--kb-dotnet); }
+  .c-dotnet .cat-badge { background: rgba(167,139,250,0.1); color: var(--kb-dotnet); border: 1px solid rgba(167,139,250,0.2); }
+  .c-dotnet .article-card::before { background: linear-gradient(90deg, var(--kb-dotnet), transparent); }
+  .c-dotnet .article-tag { background: rgba(167,139,250,0.1); color: var(--kb-dotnet); border: 1px solid rgba(167,139,250,0.2); }
 
-  .c-arch .cat-icon  { background: rgba(245,166,35,0.1); }
-  .c-arch .cat-title { color: var(--accent); }
-  .c-arch .cat-badge { background: rgba(245,166,35,0.1); color: var(--accent); border: 1px solid rgba(245,166,35,0.2); }
-  .c-arch .article-card::before { background: linear-gradient(90deg, var(--accent), transparent); }
-  .c-arch .article-tag { background: rgba(245,166,35,0.1); color: var(--accent); border: 1px solid rgba(245,166,35,0.2); }
+  .c-arch .cat-icon  { background: rgba(251,191,36,0.1); }
+  .c-arch .cat-title { color: var(--kb-arch); }
+  .c-arch .cat-badge { background: rgba(251,191,36,0.1); color: var(--kb-arch); border: 1px solid rgba(251,191,36,0.2); }
+  .c-arch .article-card::before { background: linear-gradient(90deg, var(--kb-arch), transparent); }
+  .c-arch .article-tag { background: rgba(251,191,36,0.1); color: var(--kb-arch); border: 1px solid rgba(251,191,36,0.2); }
 
   /* ── UPCOMING SECTION ── */
   .upcoming-section {
-    margin-top: 1rem;
-    border: 1px dashed var(--border2);
-    border-radius: 10px;
-    padding: 1.75rem 2rem 2rem;
+    margin-top: 1rem; border: 1px dashed var(--border2);
+    border-radius: 10px; padding: 1.75rem 2rem 2rem;
     background: rgba(255,255,255,0.01);
   }
   .upcoming-section[data-hidden="true"] { display: none; }
-
-  .upcoming-header {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 0.5rem;
-  }
-  .upcoming-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--muted); font-weight: 600;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .upcoming-eyebrow::before {
-    content: ''; display: inline-block; width: 16px; height: 1px;
-    background: var(--muted); opacity: 0.5;
-  }
-  .upcoming-title {
-    font-family: 'Syne', sans-serif; font-size: 1rem;
-    font-weight: 700; color: var(--muted2); margin-bottom: 0.35rem;
-  }
+  .upcoming-eyebrow { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .upcoming-eyebrow::before { content: ''; display: inline-block; width: 16px; height: 1px; background: var(--muted); opacity: 0.5; }
+  .upcoming-title { font-family: var(--font-head); font-size: 1rem; font-weight: 700; color: var(--muted2); margin-bottom: 0.35rem; }
   .upcoming-desc { font-size: 12px; color: var(--muted); margin-bottom: 1.5rem; max-width: 520px; }
 
-  /* ── UPCOMING GROUP ── */
   .upcoming-group { margin-bottom: 1.5rem; }
   .upcoming-group:last-child { margin-bottom: 0; }
-  .upcoming-group-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 0.6rem;
-    display: flex; align-items: center; gap: 8px;
-  }
+  .upcoming-group-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px; }
   .upcoming-group-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  /* ── UPCOMING TOPIC ROW ── */
   .upcoming-grid { display: flex; flex-direction: column; gap: 6px; }
   .upcoming-row {
     display: flex; align-items: center; gap: 12px;
@@ -274,17 +235,9 @@
   }
   .upcoming-row:hover { border-color: var(--border2); }
   .upcoming-row-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; opacity: 0.5; }
-  .upcoming-row-tag {
-    font-family: 'JetBrains Mono', monospace; font-size: 9px;
-    padding: 2px 7px; border-radius: 3px; font-weight: 700;
-    letter-spacing: 0.06em; white-space: nowrap; opacity: 0.7;
-  }
+  .upcoming-row-tag { font-family: var(--font-mono); font-size: 9px; padding: 2px 7px; border-radius: 3px; font-weight: 700; letter-spacing: 0.06em; white-space: nowrap; opacity: 0.7; }
   .upcoming-row-title { font-size: 12.5px; color: var(--muted2); flex: 1; line-height: 1.4; }
-  .upcoming-row-status {
-    font-family: 'JetBrains Mono', monospace; font-size: 9px;
-    color: var(--muted); letter-spacing: 0.06em; white-space: nowrap;
-    border: 1px dashed var(--border2); padding: 1px 8px; border-radius: 10px;
-  }
+  .upcoming-row-status { font-family: var(--font-mono); font-size: 9px; color: var(--muted); letter-spacing: 0.06em; white-space: nowrap; border: 1px dashed var(--border2); padding: 1px 8px; border-radius: 10px; }
 
   /* ── EMPTY SEARCH STATE ── */
   #no-results { display: none; text-align: center; padding: 4rem 2rem; color: var(--muted); }
@@ -293,16 +246,8 @@
   #no-results strong { color: var(--muted2); }
 
   /* ── FOOTER ── */
-  footer {
-    border-top: 1px solid var(--border); padding: 1.5rem 2rem;
-    display: flex; align-items: center; justify-content: space-between;
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
-  }
-  footer a { color: var(--accent); }
-
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  footer { border-top: 1px solid var(--border); padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  footer a { color: var(--kb-brand); }
 </style>
 </head>
 <body>
@@ -334,7 +279,7 @@
   <div class="stat"><span class="stat-num">9</span>&nbsp;Upcoming</div>
   <div class="stat"><span class="stat-num">4</span>&nbsp;Categories</div>
   <div class="stat" style="display:flex;align-items:center;gap:6px;">
-    <span style="width:7px;height:7px;border-radius:50%;background:var(--accent4);display:inline-block;"></span>
+    <span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;"></span>
     <span>Active</span>
   </div>
 </div>
@@ -342,49 +287,45 @@
 <!-- ── BODY ── -->
 <div class="layout">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Browse</div>
-      <div class="sidebar-item active" onclick="filterCat('all', this)">
+  <!-- KB SIDEBAR -->
+  <aside class="kb-sidebar">
+    <div class="kb-sidebar-section">
+      <div class="kb-sidebar-heading">Browse</div>
+      <div class="kb-sidebar-item active" onclick="filterCat('all', this)">
         <span style="font-size:14px;">◈</span> All Articles
-        <span class="sidebar-count">2</span>
+        <span class="kb-count">2</span>
       </div>
     </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-heading">.NET Platform</div>
-      <div class="sidebar-item" onclick="filterCat('dotnet', this)">
-        <span class="sidebar-dot d-dotnet"></span> .NET Core &amp; EF
-        <span class="sidebar-count">1</span>
+    <div class="kb-sidebar-section">
+      <div class="kb-sidebar-heading">.NET Platform</div>
+      <div class="kb-sidebar-item" onclick="filterCat('dotnet', this)">
+        <span class="kb-dot d-dotnet"></span> .NET Core &amp; EF
+        <span class="kb-count">1</span>
       </div>
     </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Engineering</div>
-      <div class="sidebar-item" onclick="filterCat('arch', this)">
-        <span class="sidebar-dot d-arch"></span> Architecture
-        <span class="sidebar-count">1</span>
+    <div class="kb-sidebar-section">
+      <div class="kb-sidebar-heading">Engineering</div>
+      <div class="kb-sidebar-item" onclick="filterCat('arch', this)">
+        <span class="kb-dot d-arch"></span> Architecture
+        <span class="kb-count">1</span>
       </div>
-      <div class="sidebar-item" onclick="filterCat('frontend', this)">
-        <span class="sidebar-dot d-frontend"></span> Frontend
-        <span class="sidebar-count" style="color:var(--border2);">—</span>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Emerging</div>
-      <div class="sidebar-item" onclick="filterCat('ai', this)">
-        <span class="sidebar-dot d-ai"></span> AI &amp; Agentic
-        <span class="sidebar-count" style="color:var(--border2);">—</span>
+      <div class="kb-sidebar-item" onclick="filterCat('frontend', this)">
+        <span class="kb-dot d-frontend"></span> Frontend
+        <span class="kb-count" style="color:var(--border2);">—</span>
       </div>
     </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Roadmap</div>
-      <div class="sidebar-item" onclick="filterCat('upcoming', this)">
-        <span class="sidebar-dot d-upcoming"></span> Upcoming Topics
-        <span class="sidebar-count">9</span>
+    <div class="kb-sidebar-section">
+      <div class="kb-sidebar-heading">Emerging</div>
+      <div class="kb-sidebar-item" onclick="filterCat('ai', this)">
+        <span class="kb-dot d-ai"></span> AI &amp; Agentic
+        <span class="kb-count" style="color:var(--border2);">—</span>
+      </div>
+    </div>
+    <div class="kb-sidebar-section">
+      <div class="kb-sidebar-heading">Roadmap</div>
+      <div class="kb-sidebar-item" onclick="filterCat('upcoming', this)">
+        <span class="kb-dot d-upcoming"></span> Upcoming Topics
+        <span class="kb-count">9</span>
       </div>
     </div>
   </aside>
@@ -392,7 +333,6 @@
   <!-- CONTENT -->
   <main class="content">
 
-    <!-- NO RESULTS -->
     <div id="no-results">
       <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -401,9 +341,7 @@
       <p style="margin-top:6px;font-size:12px;">Try a different keyword or browse by category.</p>
     </div>
 
-    <!-- ════════════════════════════════════ -->
-    <!-- CATEGORY: .NET Platform             -->
-    <!-- ════════════════════════════════════ -->
+    <!-- .NET Platform -->
     <section class="cat-section c-dotnet" data-cat="dotnet" id="sec-dotnet">
       <div class="cat-header">
         <div class="cat-icon">🟣</div>
@@ -414,7 +352,6 @@
         <span class="cat-badge">1 article</span>
       </div>
       <div class="article-grid">
-
         <a href="dotnet/efcore/ef-core-performance-deep-dive.html" class="article-card"
            data-title="EF Core Performance Deep Dive"
            data-tags="ef core entity framework performance query optimization bulk writes change tracker"
@@ -433,13 +370,10 @@
             <span>May 2026</span>
           </div>
         </a>
-
       </div>
     </section>
 
-    <!-- ════════════════════════════════════ -->
-    <!-- CATEGORY: Architecture              -->
-    <!-- ════════════════════════════════════ -->
+    <!-- Architecture -->
     <section class="cat-section c-arch" data-cat="arch" id="sec-arch">
       <div class="cat-header">
         <div class="cat-icon">🟡</div>
@@ -450,7 +384,6 @@
         <span class="cat-badge">1 article</span>
       </div>
       <div class="article-grid">
-
         <a href="architecture/solid-principles-deep-dive.html" class="article-card"
            data-title="SOLID Principles Deep Dive"
            data-tags="solid single responsibility open closed liskov substitution interface segregation dependency inversion design principles oop clean code"
@@ -469,120 +402,93 @@
             <span>Jun 2026</span>
           </div>
         </a>
-
       </div>
     </section>
 
-    <!-- ════════════════════════════════════ -->
-    <!-- UPCOMING KNOWLEDGE BASE             -->
-    <!-- ════════════════════════════════════ -->
+    <!-- Upcoming -->
     <div class="upcoming-section" id="sec-upcoming" data-cat="upcoming">
-
       <div class="upcoming-eyebrow">Roadmap</div>
       <div class="upcoming-title">📋 Upcoming Knowledge Base</div>
       <div class="upcoming-desc">Topics actively planned and researched — published progressively as deep-dive articles. Watch this space.</div>
 
-      <!-- .NET Platform -->
       <div class="upcoming-group" data-upcat="dotnet">
         <div class="upcoming-group-label">.NET Platform</div>
         <div class="upcoming-grid">
-          <div class="upcoming-row"
-               data-title="Middleware Pipeline Deep Dive"
-               data-tags="aspnet middleware pipeline request lifecycle di scopes filters">
-            <span class="upcoming-row-dot" style="background:var(--accent3)"></span>
-            <span class="upcoming-row-tag" style="background:rgba(167,139,250,0.1);color:var(--accent3);border:1px solid rgba(167,139,250,0.2);">ASP.NET</span>
+          <div class="upcoming-row" data-title="Middleware Pipeline Deep Dive" data-tags="aspnet middleware pipeline request lifecycle di scopes filters">
+            <span class="upcoming-row-dot" style="background:var(--kb-dotnet)"></span>
+            <span class="upcoming-row-tag" style="background:rgba(167,139,250,0.1);color:var(--kb-dotnet);border:1px solid rgba(167,139,250,0.2);">ASP.NET</span>
             <span class="upcoming-row-title">Middleware Pipeline &amp; Request Lifecycle</span>
             <span class="upcoming-row-status">In Research</span>
           </div>
-          <div class="upcoming-row"
-               data-title="Web API Design Best Practices"
-               data-tags="web api versioning validation problem details restful minimal api fluentvalidation">
-            <span class="upcoming-row-dot" style="background:var(--accent3)"></span>
-            <span class="upcoming-row-tag" style="background:rgba(167,139,250,0.1);color:var(--accent3);border:1px solid rgba(167,139,250,0.2);">Web API</span>
+          <div class="upcoming-row" data-title="Web API Design Best Practices" data-tags="web api versioning validation problem details restful minimal api fluentvalidation">
+            <span class="upcoming-row-dot" style="background:var(--kb-dotnet)"></span>
+            <span class="upcoming-row-tag" style="background:rgba(167,139,250,0.1);color:var(--kb-dotnet);border:1px solid rgba(167,139,250,0.2);">Web API</span>
             <span class="upcoming-row-title">Web API Design — Versioning, Validation &amp; Problem Details</span>
             <span class="upcoming-row-status">Planned</span>
           </div>
-          <div class="upcoming-row"
-               data-title="JWT Auth Security Patterns"
-               data-tags="jwt oauth security token refresh claims authorization aspnet">
-            <span class="upcoming-row-dot" style="background:var(--accent3)"></span>
-            <span class="upcoming-row-tag" style="background:rgba(167,139,250,0.1);color:var(--accent3);border:1px solid rgba(167,139,250,0.2);">Security</span>
+          <div class="upcoming-row" data-title="JWT Auth Security Patterns" data-tags="jwt oauth security token refresh claims authorization aspnet">
+            <span class="upcoming-row-dot" style="background:var(--kb-dotnet)"></span>
+            <span class="upcoming-row-tag" style="background:rgba(167,139,250,0.1);color:var(--kb-dotnet);border:1px solid rgba(167,139,250,0.2);">Security</span>
             <span class="upcoming-row-title">JWT &amp; OAuth 2.0 — Production Security Patterns</span>
             <span class="upcoming-row-status">Planned</span>
           </div>
-          <div class="upcoming-row"
-               data-title="SQL Server Query Tuning"
-               data-tags="sql server query plan execution index dmv statistics parameterisation">
-            <span class="upcoming-row-dot" style="background:var(--accent3)"></span>
-            <span class="upcoming-row-tag" style="background:rgba(167,139,250,0.1);color:var(--accent3);border:1px solid rgba(167,139,250,0.2);">SQL Server</span>
+          <div class="upcoming-row" data-title="SQL Server Query Tuning" data-tags="sql server query plan execution index dmv statistics parameterisation">
+            <span class="upcoming-row-dot" style="background:var(--kb-dotnet)"></span>
+            <span class="upcoming-row-tag" style="background:rgba(167,139,250,0.1);color:var(--kb-dotnet);border:1px solid rgba(167,139,250,0.2);">SQL Server</span>
             <span class="upcoming-row-title">Query Plan Analysis &amp; Index Tuning</span>
             <span class="upcoming-row-status">Planned</span>
           </div>
         </div>
       </div>
 
-      <!-- Architecture -->
       <div class="upcoming-group" data-upcat="arch">
         <div class="upcoming-group-label">Architecture &amp; Patterns</div>
         <div class="upcoming-grid">
-          <div class="upcoming-row"
-               data-title="Clean Architecture in .NET"
-               data-tags="clean architecture domain application infrastructure dependency inversion testability">
-            <span class="upcoming-row-dot" style="background:var(--accent)"></span>
-            <span class="upcoming-row-tag" style="background:rgba(245,166,35,0.1);color:var(--accent);border:1px solid rgba(245,166,35,0.2);">Architecture</span>
+          <div class="upcoming-row" data-title="Clean Architecture in .NET" data-tags="clean architecture domain application infrastructure dependency inversion testability">
+            <span class="upcoming-row-dot" style="background:var(--kb-arch)"></span>
+            <span class="upcoming-row-tag" style="background:rgba(251,191,36,0.1);color:var(--kb-arch);border:1px solid rgba(251,191,36,0.2);">Architecture</span>
             <span class="upcoming-row-title">Clean Architecture with .NET — Layers, Contracts &amp; Boundaries</span>
             <span class="upcoming-row-status">Planned</span>
           </div>
-          <div class="upcoming-row"
-               data-title="CQRS MediatR Pattern"
-               data-tags="cqrs mediatr command query separation pipeline behaviors fluentvalidation">
-            <span class="upcoming-row-dot" style="background:var(--accent)"></span>
-            <span class="upcoming-row-tag" style="background:rgba(245,166,35,0.1);color:var(--accent);border:1px solid rgba(245,166,35,0.2);">CQRS</span>
+          <div class="upcoming-row" data-title="CQRS MediatR Pattern" data-tags="cqrs mediatr command query separation pipeline behaviors fluentvalidation">
+            <span class="upcoming-row-dot" style="background:var(--kb-arch)"></span>
+            <span class="upcoming-row-tag" style="background:rgba(251,191,36,0.1);color:var(--kb-arch);border:1px solid rgba(251,191,36,0.2);">CQRS</span>
             <span class="upcoming-row-title">CQRS &amp; MediatR — Command Query Separation in Practice</span>
             <span class="upcoming-row-status">Planned</span>
           </div>
         </div>
       </div>
 
-      <!-- AI & Agentic -->
       <div class="upcoming-group" data-upcat="ai">
         <div class="upcoming-group-label">AI &amp; Agentic Development</div>
         <div class="upcoming-grid">
-          <div class="upcoming-row"
-               data-title="Semantic Kernel .NET AI"
-               data-tags="semantic kernel ai agents llm plugins planners memory connectors dotnet">
-            <span class="upcoming-row-dot" style="background:var(--accent4)"></span>
-            <span class="upcoming-row-tag" style="background:rgba(52,211,153,0.1);color:var(--accent4);border:1px solid rgba(52,211,153,0.2);">AI</span>
+          <div class="upcoming-row" data-title="Semantic Kernel .NET AI" data-tags="semantic kernel ai agents llm plugins planners memory connectors dotnet">
+            <span class="upcoming-row-dot" style="background:var(--kb-ai)"></span>
+            <span class="upcoming-row-tag" style="background:rgba(74,222,128,0.1);color:var(--kb-ai);border:1px solid rgba(74,222,128,0.2);">AI</span>
             <span class="upcoming-row-title">Semantic Kernel — Building AI Agents in .NET</span>
             <span class="upcoming-row-status">In Research</span>
           </div>
-          <div class="upcoming-row"
-               data-title="RAG Pipeline Production"
-               data-tags="rag retrieval augmented generation vector store chunking hybrid search hallucination">
-            <span class="upcoming-row-dot" style="background:var(--accent4)"></span>
-            <span class="upcoming-row-tag" style="background:rgba(52,211,153,0.1);color:var(--accent4);border:1px solid rgba(52,211,153,0.2);">RAG</span>
+          <div class="upcoming-row" data-title="RAG Pipeline Production" data-tags="rag retrieval augmented generation vector store chunking hybrid search hallucination">
+            <span class="upcoming-row-dot" style="background:var(--kb-ai)"></span>
+            <span class="upcoming-row-tag" style="background:rgba(74,222,128,0.1);color:var(--kb-ai);border:1px solid rgba(74,222,128,0.2);">RAG</span>
             <span class="upcoming-row-title">RAG Pipelines — From Prototype to Production</span>
             <span class="upcoming-row-status">Planned</span>
           </div>
         </div>
       </div>
 
-      <!-- Frontend -->
       <div class="upcoming-group" data-upcat="frontend">
         <div class="upcoming-group-label">Frontend &amp; UI</div>
         <div class="upcoming-grid">
-          <div class="upcoming-row"
-               data-title="React Performance Patterns"
-               data-tags="react performance memo virtualization bundle splitting code splitting lazy loading">
-            <span class="upcoming-row-dot" style="background:var(--accent2)"></span>
-            <span class="upcoming-row-tag" style="background:rgba(79,195,247,0.1);color:var(--accent2);border:1px solid rgba(79,195,247,0.2);">React</span>
+          <div class="upcoming-row" data-title="React Performance Patterns" data-tags="react performance memo virtualization bundle splitting code splitting lazy loading">
+            <span class="upcoming-row-dot" style="background:var(--kb-frontend)"></span>
+            <span class="upcoming-row-tag" style="background:rgba(45,212,191,0.1);color:var(--kb-frontend);border:1px solid rgba(45,212,191,0.2);">React</span>
             <span class="upcoming-row-title">React Performance — Memo, Virtualization &amp; Bundle Splitting</span>
             <span class="upcoming-row-status">Planned</span>
           </div>
         </div>
       </div>
-
-    </div><!-- /upcoming-section -->
+    </div>
 
   </main>
 </div>
@@ -594,22 +500,20 @@
 </footer>
 
 <script>
-const input       = document.getElementById('search-input');
-const noResults   = document.getElementById('no-results');
-const noResultsTerm = document.getElementById('no-results-term');
-const catSections = Array.from(document.querySelectorAll('.cat-section'));
-const upcomingEl  = document.getElementById('sec-upcoming');
-const upcomingRows= Array.from(upcomingEl.querySelectorAll('.upcoming-row'));
+const input        = document.getElementById('search-input');
+const noResults    = document.getElementById('no-results');
+const noResultsTerm= document.getElementById('no-results-term');
+const catSections  = Array.from(document.querySelectorAll('.cat-section'));
+const upcomingEl   = document.getElementById('sec-upcoming');
+const upcomingRows = Array.from(upcomingEl.querySelectorAll('.upcoming-row'));
 const upcomingGroups = Array.from(upcomingEl.querySelectorAll('.upcoming-group'));
 
 function normalise(s) { return s.toLowerCase().replace(/[^a-z0-9 ]/g, ''); }
 
-// ── SEARCH ──
 function doSearch(term) {
   const q = normalise(term);
   let visible = 0;
 
-  // published cards
   catSections.forEach(sec => {
     const cards = sec.querySelectorAll('.article-card');
     let secVis = 0;
@@ -622,7 +526,6 @@ function doSearch(term) {
     sec.dataset.hidden = secVis === 0 ? 'true' : 'false';
   });
 
-  // upcoming rows
   let upVis = 0;
   upcomingRows.forEach(row => {
     const hay = normalise((row.dataset.title||'') + ' ' + (row.dataset.tags||'') + ' ' + row.textContent);
@@ -630,7 +533,6 @@ function doSearch(term) {
     row.style.display = match ? '' : 'none';
     if (match) upVis++;
   });
-  // hide/show groups based on visible rows
   upcomingGroups.forEach(grp => {
     const anyVisible = Array.from(grp.querySelectorAll('.upcoming-row')).some(r => r.style.display !== 'none');
     grp.style.display = anyVisible ? '' : 'none';
@@ -649,9 +551,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { input.blur(); input.value = ''; doSearch(''); }
 });
 
-// ── CATEGORY FILTER ──
 function filterCat(cat, el) {
-  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.kb-sidebar-item').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
   input.value = '';
 
@@ -663,7 +564,6 @@ function filterCat(cat, el) {
     noResults.style.display = 'none';
     return;
   }
-
   if (cat === 'upcoming') {
     catSections.forEach(s => s.dataset.hidden = 'true');
     upcomingEl.dataset.hidden = 'false';
@@ -673,16 +573,12 @@ function filterCat(cat, el) {
     return;
   }
 
-  // specific category — show matching published section + matching upcoming group
-  catSections.forEach(s => { s.dataset.hidden = (s.dataset.cat !== cat) ? 'true' : 'false'; });
-
-  // filter upcoming to matching group only
+  catSections.forEach(s => { s.dataset.hidden = s.dataset.cat !== cat ? 'true' : 'false'; });
   upcomingGroups.forEach(g => {
     g.style.display = g.dataset.upcat === cat ? '' : 'none';
     g.querySelectorAll('.upcoming-row').forEach(r => { r.style.display = ''; });
   });
-  const anyUpcoming = Array.from(upcomingGroups).some(g => g.style.display !== 'none');
-  upcomingEl.dataset.hidden = anyUpcoming ? 'false' : 'true';
+  upcomingEl.dataset.hidden = Array.from(upcomingGroups).some(g => g.style.display !== 'none') ? 'false' : 'true';
   noResults.style.display = 'none';
 }
 </script>
