@@ -529,9 +529,9 @@
 
 <!-- ── STATS ── -->
 <div class="stats-bar">
-  <div class="stat"><span class="stat-num" id="stat-articles">1</span>&nbsp;Articles</div>
+  <div class="stat"><span class="stat-num" id="stat-articles">2</span>&nbsp;Articles</div>
   <div class="stat"><span class="stat-num">4</span>&nbsp;Categories</div>
-  <div class="stat"><span class="stat-num">1</span>&nbsp;Domains</div>
+  <div class="stat"><span class="stat-num">2</span>&nbsp;Domains</div>
   <div class="stat" style="display:flex;align-items:center;gap:6px;">
     <span style="width:7px;height:7px;border-radius:50%;background:var(--accent4);display:inline-block;"></span>
     <span>Active</span>
@@ -547,7 +547,7 @@
       <div class="sidebar-heading">Browse</div>
       <div class="sidebar-item active" onclick="filterCat('all')">
         <span style="font-size:14px;">◈</span> All Articles
-        <span class="sidebar-count" id="cnt-all">1</span>
+        <span class="sidebar-count" id="cnt-all">2</span>
       </div>
     </div>
 
@@ -563,7 +563,7 @@
       <div class="sidebar-heading">Engineering</div>
       <div class="sidebar-item" onclick="filterCat('arch')">
         <span class="sidebar-dot d-arch"></span> Architecture
-        <span class="sidebar-count" id="cnt-arch">0</span>
+        <span class="sidebar-count" id="cnt-arch">1</span>
       </div>
       <div class="sidebar-item" onclick="filterCat('frontend')">
         <span class="sidebar-dot d-frontend"></span> Frontend
@@ -701,9 +701,32 @@
           <div class="cat-title">Architecture &amp; Patterns</div>
           <div class="cat-desc">Clean Architecture · CQRS · Domain-Driven Design · Microservices</div>
         </div>
-        <span class="cat-badge">Coming soon</span>
+        <span class="cat-badge">1 article</span>
       </div>
       <div class="article-grid">
+
+        <a href="architecture/solid-principles-deep-dive.html" class="article-card"
+           data-title="SOLID Principles Deep Dive"
+           data-tags="solid single responsibility open closed liskov substitution interface segregation dependency inversion design principles oop clean code"
+           data-cat="arch">
+          <div class="article-top">
+            <span class="article-tag">Architecture</span>
+            <span class="article-status status-published">● Published</span>
+          </div>
+          <div class="article-title">SOLID Principles — Senior .NET Architect Deep Dive</div>
+          <div class="article-desc">A production-grade walkthrough of all five SOLID principles with C# examples, real-world pitfalls, anti-patterns, Mermaid diagrams, and architect-level notes on when to apply — and when not to.</div>
+          <div class="article-meta">
+            <span>5 principles</span>
+            <span class="article-meta-dot">·</span>
+            <span>OOP &amp; Design</span>
+            <span class="article-meta-dot">·</span>
+            <span>Jun 2026</span>
+          </div>
+        </a>
+
+      </div>
+
+      <div class="article-grid" style="margin-top:1rem;">
         <div class="article-card coming" data-title="Clean Architecture in .NET" data-cat="arch">
           <div class="article-top">
             <span class="article-tag">Architecture</span>
@@ -723,6 +746,7 @@
           <div class="article-meta"><span>Coming soon</span></div>
         </div>
       </div>
+
     </section>
 
     <!-- ════════════════════════════════ -->
@@ -790,7 +814,7 @@
 <!-- ── FOOTER ── -->
 <footer>
   <span>© 2026 Yogananda Rao Locherla — <a href="../index.html">Profile</a></span>
-  <span style="font-size:10px;">Built article by article · <span id="footer-count">1</span> published</span>
+  <span style="font-size:10px;">Built article by article · <span id="footer-count">2</span> published</span>
 </footer>
 
 <script>

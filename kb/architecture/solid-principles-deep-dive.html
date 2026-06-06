@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOLID Principles — Senior .NET Architect Deep Dive</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg: #0d0f12;
+  --bg2: #141720;
+  --bg3: #1c2030;
+  --bg4: #222840;
+  --surface: #1a1e2e;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e8eaf2;
+  --muted: #8891b0;
+  --accent: #6c8fff;
+  --accent2: #a78bfa;
+  --green: #4ade80;
+  --red: #f87171;
+  --amber: #fbbf24;
+  --teal: #2dd4bf;
+  --pink: #f472b6;
+  --orange: #fb923c;
+  --font-body: 'DM Sans', sans-serif;
+  --font-head: 'Fraunces', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --s1: #0f172a; --s2: #1e3a5f; --s3: #1a4731; --s4: #3b1f00; --s5: #2d1a4a;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+
+/* ── LAYOUT ── */
+.page { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; min-width: 260px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  position: sticky; top: 0; height: 100vh;
+  overflow-y: auto;
+  padding: 2rem 1.25rem;
+  display: flex; flex-direction: column; gap: 0.25rem;
+}
+.sidebar-logo {
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.3;
+}
+.sidebar-logo span { color: var(--accent); }
+.nav-section { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 1rem 0 0.4rem; font-weight: 600; }
+.nav-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0.45rem 0.75rem; border-radius: 6px;
+  color: var(--muted); font-size: 13px;
+  text-decoration: none; cursor: pointer;
+  transition: all 0.15s;
+  border: none; background: none; width: 100%; text-align: left;
+}
+.nav-link:hover, .nav-link.active { background: var(--bg4); color: var(--text); }
+.nav-link .badge {
+  margin-left: auto; font-size: 10px; font-weight: 600;
+  padding: 2px 7px; border-radius: 20px;
+  background: var(--bg4); color: var(--accent);
+}
+.main { flex: 1; overflow-y: auto; padding: 3rem 4rem 6rem; max-width: 960px; }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, #0d1a3a 0%, #1a0d3a 50%, #0d2a1a 100%);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 3rem;
+  margin-bottom: 3rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: 'SOLID';
+  position: absolute; right: -20px; top: -30px;
+  font-family: var(--font-head);
+  font-size: 10rem; font-weight: 700;
+  color: rgba(108,143,255,0.05);
+  pointer-events: none; user-select: none;
+  line-height: 1;
+}
+.hero-tag { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 1rem; }
+.hero h1 { font-family: var(--font-head); font-size: 2.8rem; font-weight: 700; line-height: 1.15; margin-bottom: 1rem; }
+.hero h1 em { font-style: italic; color: var(--accent2); }
+.hero-desc { color: var(--muted); font-size: 1rem; max-width: 600px; margin-bottom: 2rem; }
+.hero-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill {
+  font-size: 12px; font-weight: 500;
+  padding: 5px 14px; border-radius: 20px;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  background: rgba(255,255,255,0.03);
+}
+.pill.accent { border-color: var(--accent); color: var(--accent); background: rgba(108,143,255,0.08); }
+
+/* ── SECTION ── */
+.section { margin-bottom: 4rem; scroll-margin-top: 2rem; }
+.section-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 0.6rem; }
+.section-title {
+  font-family: var(--font-head);
+  font-size: 1.8rem; font-weight: 600;
+  margin-bottom: 0.5rem; line-height: 1.25;
+}
+.section-title .num { color: var(--accent); }
+.section-desc { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+
+/* ── TL;DR CARD ── */
+.tldr {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 2.5rem;
+}
+.tldr h3 { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 1rem; }
+.tldr p { color: var(--muted); font-size: 0.93rem; line-height: 1.7; }
+.tldr p strong { color: var(--text); }
+
+/* ── PRINCIPLE CARDS ── */
+.principles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 2.5rem; }
+.principle-card {
+  background: var(--bg2);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+.principle-card:hover { background: var(--bg3); }
+.principle-card .letter {
+  font-family: var(--font-head);
+  font-size: 3.5rem; font-weight: 700;
+  line-height: 1; margin-bottom: 0.5rem;
+  opacity: 0.15;
+}
+.principle-card .name { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; }
+.principle-card .tagline { font-size: 0.8rem; color: var(--muted); }
+.c-srp .letter { color: var(--accent); }
+.c-ocp .letter { color: var(--teal); }
+.c-lsp .letter { color: var(--green); }
+.c-isp .letter { color: var(--amber); }
+.c-dip .letter { color: var(--pink); }
+.c-srp { border-top: 2px solid var(--accent); }
+.c-ocp { border-top: 2px solid var(--teal); }
+.c-lsp { border-top: 2px solid var(--green); }
+.c-isp { border-top: 2px solid var(--amber); }
+.c-dip { border-top: 2px solid var(--pink); }
+
+/* ── PRINCIPLE SECTION ── */
+.principle-header {
+  display: flex; align-items: flex-start; gap: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+.big-letter {
+  font-family: var(--font-head);
+  font-size: 5rem; font-weight: 700;
+  line-height: 1; flex-shrink: 0;
+}
+.principle-header .meta { flex: 1; }
+.principle-header h2 { font-family: var(--font-head); font-size: 1.5rem; font-weight: 600; margin-bottom: 0.3rem; }
+.principle-header .full-name { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.75rem; }
+.principle-header .definition { font-size: 0.95rem; line-height: 1.65; color: var(--text); }
+
+/* ── CODE ── */
+.code-block {
+  background: #0a0c10;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 1.25rem 0;
+  overflow: hidden;
+}
+.code-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border);
+}
+.code-label { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; }
+.code-label.correct { color: var(--green); }
+.code-label.wrong { color: var(--red); }
+.code-label.trap { color: var(--amber); }
+.code-label.neutral { color: var(--muted); }
+.lang-badge { font-size: 10px; background: var(--bg3); color: var(--muted); padding: 2px 8px; border-radius: 4px; }
+.code-body { padding: 1.25rem 1.5rem; overflow-x: auto; }
+.code-body pre { font-family: var(--font-mono); font-size: 13px; line-height: 1.65; white-space: pre; }
+.code-body .comment { color: #4a5568; }
+.code-body .kw { color: #63b3ed; }
+.code-body .type { color: #68d391; }
+.code-body .str { color: #fbd38d; }
+.code-body .method { color: #a78bfa; }
+.code-body .iface { color: #76e4f7; }
+.code-body .attr { color: #f6ad55; }
+
+/* ── CALLOUTS ── */
+.callout {
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  border-left: 3px solid;
+  display: flex; gap: 0.75rem; align-items: flex-start;
+}
+.callout-icon { font-size: 1.1rem; flex-shrink: 0; line-height: 1.7; }
+.callout.info { background: rgba(99,179,237,0.07); border-color: var(--accent); color: var(--muted); }
+.callout.info strong { color: #63b3ed; }
+.callout.warn { background: rgba(251,191,36,0.07); border-color: var(--amber); color: var(--muted); }
+.callout.warn strong { color: var(--amber); }
+.callout.danger { background: rgba(248,113,113,0.07); border-color: var(--red); color: var(--muted); }
+.callout.danger strong { color: var(--red); }
+.callout.success { background: rgba(74,222,128,0.07); border-color: var(--green); color: var(--muted); }
+.callout.success strong { color: var(--green); }
+
+/* ── TABLES ── */
+.tbl-wrap { overflow-x: auto; margin: 1.25rem 0; border-radius: var(--radius); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { background: var(--bg3); color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.7rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.td-green { color: var(--green); }
+.td-red { color: var(--red); }
+.td-amber { color: var(--amber); }
+
+/* ── ANTI-PATTERNS ── */
+.anti-list { display: flex; flex-direction: column; gap: 0.75rem; margin: 1.25rem 0; }
+.anti-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  font-size: 0.88rem;
+}
+.anti-item .never { color: var(--red); font-weight: 600; font-family: var(--font-mono); font-size: 0.85rem; }
+.anti-item .because { color: var(--amber); }
+.anti-item .instead { color: var(--green); }
+
+/* ── DIAGRAM WRAP ── */
+.diagram-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+.diagram-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; margin-bottom: 0.4rem; }
+.diagram-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.5; }
+.mermaid { font-family: var(--font-mono) !important; }
+
+/* ── CHECKLIST ── */
+.checklist { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin: 1rem 0; }
+.checklist li { display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.9rem; }
+.checklist li::before { content: '☐'; font-size: 1rem; color: var(--muted); flex-shrink: 0; line-height: 1.5; }
+.checklist.done li::before { content: '✓'; color: var(--green); }
+
+/* ── QUICK REF ── */
+.qref {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.qref-header { background: var(--bg3); padding: 1rem 1.5rem; font-weight: 600; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+.qref-body { padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.qref-col h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; margin-bottom: 0.6rem; }
+.qref-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+.qref-col li { font-size: 0.88rem; color: var(--muted); padding-left: 1rem; position: relative; }
+.qref-col li::before { content: '›'; position: absolute; left: 0; color: var(--accent); }
+
+/* ── BEFORE/AFTER ── */
+.before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.25rem 0; }
+.ba-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+.ba-header { padding: 0.6rem 1rem; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.ba-header.before { background: rgba(248,113,113,0.12); color: var(--red); }
+.ba-header.after { background: rgba(74,222,128,0.10); color: var(--green); }
+.ba-body { padding: 1rem 1.25rem; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; color: var(--muted); white-space: pre-wrap; }
+
+/* ── METRICS ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; margin: 1.25rem 0; }
+.metric {
+  background: var(--bg2);
+  padding: 1.2rem 1.25rem;
+}
+.metric .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-bottom: 0.4rem; }
+.metric .value { font-size: 1.25rem; font-weight: 600; font-family: var(--font-head); }
+.metric .sub { font-size: 11px; color: var(--muted); margin-top: 0.2rem; }
+.m-good { color: var(--green); }
+.m-warn { color: var(--amber); }
+.m-bad { color: var(--red); }
+
+/* ── EVOLUTION TIMELINE ── */
+.timeline { position: relative; padding-left: 2rem; margin: 1.5rem 0; }
+.timeline::before { content: ''; position: absolute; left: 0.45rem; top: 0; bottom: 0; width: 1px; background: var(--border); }
+.timeline-item { position: relative; margin-bottom: 1.75rem; }
+.timeline-dot { position: absolute; left: -1.65rem; top: 0.35rem; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
+.timeline-dot.teal { border-color: var(--teal); }
+.timeline-dot.green { border-color: var(--green); }
+.timeline-dot.amber { border-color: var(--amber); }
+.timeline-item .era { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; }
+.timeline-item h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; }
+.timeline-item p { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main { padding: 2rem 1.5rem 4rem; }
+  .before-after { grid-template-columns: 1fr; }
+  .qref-body { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">.NET Architect<br><span>SOLID Principles</span></div>
+
+  <span class="nav-section">Overview</span>
+  <a class="nav-link active" onclick="scrollTo('overview')">TL;DR &amp; Evolution</a>
+  <a class="nav-link" onclick="scrollTo('overview')">Architecture Impact</a>
+
+  <span class="nav-section">Principles</span>
+  <a class="nav-link" onclick="scrollTo('srp')">
+    <span style="color:var(--accent);font-weight:700">S</span> Single Responsibility
+    <span class="badge">SRP</span>
+  </a>
+  <a class="nav-link" onclick="scrollTo('ocp')">
+    <span style="color:var(--teal);font-weight:700">O</span> Open/Closed
+    <span class="badge">OCP</span>
+  </a>
+  <a class="nav-link" onclick="scrollTo('lsp')">
+    <span style="color:var(--green);font-weight:700">L</span> Liskov Substitution
+    <span class="badge">LSP</span>
+  </a>
+  <a class="nav-link" onclick="scrollTo('isp')">
+    <span style="color:var(--amber);font-weight:700">I</span> Interface Segregation
+    <span class="badge">ISP</span>
+  </a>
+  <a class="nav-link" onclick="scrollTo('dip')">
+    <span style="color:var(--pink);font-weight:700">D</span> Dependency Inversion
+    <span class="badge">DIP</span>
+  </a>
+
+  <span class="nav-section">Advanced</span>
+  <a class="nav-link" onclick="scrollTo('interactions')">Principle Interactions</a>
+  <a class="nav-link" onclick="scrollTo('antilib')">Anti-Library</a>
+  <a class="nav-link" onclick="scrollTo('quickref')">Quick Reference</a>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Senior .NET Architect Series</div>
+  <h1>SOLID Principles<br><em>The Production Reality</em></h1>
+  <p class="hero-desc">Not a university lecture. This is how SOLID actually plays out in large-scale .NET systems — with the violations that rot codebases and the patterns that prevent them.</p>
+  <div class="hero-pills">
+    <span class="pill accent">C# / .NET 8+</span>
+    <span class="pill">ASP.NET Core</span>
+    <span class="pill">DI &amp; IoC</span>
+    <span class="pill">Architecture</span>
+    <span class="pill">15+ YOE</span>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="section" id="overview">
+  <div class="section-label">Section 0</div>
+  <div class="section-title"><span class="num">§0</span> TL;DR — Senior Summary</div>
+
+  <div class="tldr">
+    <h3>Principal Engineer Brief</h3>
+    <p>
+      <strong>SOLID is a forcing function for maintainability, not a dogma.</strong> Robert C. Martin codified these five principles in the early 2000s to describe what he'd observed in well-structured OO codebases. Each principle targets a specific class of coupling — temporal, logical, data, interface, or dependency coupling — that causes systems to become unmaintainable under change. <strong>The #1 production risk of SOLID violations isn't runtime failure</strong> — it's velocity collapse: the codebase becomes so tightly coupled that every change triggers a ripple of unintended breakage across modules. <strong>The #1 tech debt risk</strong> is the God Class (SRP violation) — a class that accumulates responsibility over time and eventually becomes the only object anyone can reason about the system through. Use SOLID as a diagnostic vocabulary during architecture review, not as a compliance checklist; knowing <em>why</em> a class violates SRP is more valuable than citing the rule.
+    </p>
+  </div>
+
+  <!-- EVOLUTION TIMELINE -->
+  <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">How We Got Here — The Evolution</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="era">Pre-1990s — Procedural Era</div>
+      <h4>Monolithic Procedures &amp; Global State</h4>
+      <p>COBOL, Fortran, early C: everything in one procedure, data in global structs. Change one subroutine and you had no way to reason about what else would break. Coupling was total. The term "spaghetti code" originates here.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot teal"></div>
+      <div class="era">1990s — OOP Adoption (C++, early Java)</div>
+      <h4>Classes Introduced, But Same Problems at Class Scale</h4>
+      <p>OOP introduced encapsulation and inheritance. But developers began writing God Classes — OrderProcessor that handles parsing, validation, persistence, emailing, and reporting. The class boundary replaced the procedure boundary. Coupling remained high, just differently packaged.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot green"></div>
+      <div class="era">2000–2003 — Robert C. Martin Codifies SOLID</div>
+      <h4>The Principles Are Named</h4>
+      <p>Martin synthesised observed patterns from well-maintained OO codebases into five principles. They weren't invented — they were <em>discovered</em> in code that had survived changes gracefully. The acronym "SOLID" was coined by Michael Feathers.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot amber"></div>
+      <div class="era">2005–2015 — .NET &amp; C# Mainstream</div>
+      <h4>DI Containers, Interfaces, and Testability</h4>
+      <p>ASP.NET, then Autofac, then Unity made DI practical. SOLID became the foundation for testable .NET code. Interface-per-dependency became the idiom. Teams learned to invert dependencies onto abstractions. Interface explosion (ISP violations in the other direction) appeared as a new problem.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="border-color:var(--pink)"></div>
+      <div class="era">2016–Present — .NET Core &amp; Modular Systems</div>
+      <h4>Microservices Reframe the Principles at Service Level</h4>
+      <p>SOLID now applies at two levels: class/module level (traditional) and service/bounded-context level. SRP maps to bounded context isolation. DIP maps to event-driven contracts. The principles remain valid; the unit of analysis has shifted. AI-generated code frequently violates SRP and ISP — code review must catch this.</p>
+    </div>
+  </div>
+
+  <!-- PRINCIPLES GRID -->
+  <div class="principles-grid">
+    <div class="principle-card c-srp" onclick="scrollTo('srp')">
+      <div class="letter">S</div>
+      <div class="name">Single Responsibility</div>
+      <div class="tagline">One reason to change</div>
+    </div>
+    <div class="principle-card c-ocp" onclick="scrollTo('ocp')">
+      <div class="letter">O</div>
+      <div class="name">Open/Closed</div>
+      <div class="tagline">Open for extension, closed for modification</div>
+    </div>
+    <div class="principle-card c-lsp" onclick="scrollTo('lsp')">
+      <div class="letter">L</div>
+      <div class="name">Liskov Substitution</div>
+      <div class="tagline">Subtypes must be substitutable</div>
+    </div>
+    <div class="principle-card c-isp" onclick="scrollTo('isp')">
+      <div class="letter">I</div>
+      <div class="name">Interface Segregation</div>
+      <div class="tagline">No client forced to depend on methods it doesn't use</div>
+    </div>
+    <div class="principle-card c-dip" onclick="scrollTo('dip')">
+      <div class="letter">D</div>
+      <div class="name">Dependency Inversion</div>
+      <div class="tagline">Depend on abstractions, not concretions</div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE IMPACT DIAGRAM -->
+  <div class="diagram-wrap">
+    <div class="diagram-title">Architecture Coupling Impact</div>
+    <div class="diagram-desc">This diagram shows how each SOLID violation type maps to a coupling category and the systemic consequence it causes in a production .NET system.</div>
+    <div class="mermaid">
+graph LR
+    A[SOLID Violations] --> B[SRP Violation\nLogical Coupling]
+    A --> C[OCP Violation\nTemporal Coupling]
+    A --> D[LSP Violation\nBehavioural Mismatch]
+    A --> E[ISP Violation\nInterface Coupling]
+    A --> F[DIP Violation\nConcretion Coupling]
+
+    B --> G[God Class\nChange Ripple]
+    C --> H[Feature Switch\nSpaghetti]
+    D --> I[Runtime Type\nChecks / Null]
+    E --> J[Forced Unused\nDependencies]
+    F --> K[Untestable\nTightly Coupled]
+
+    style A fill:#1e2240,stroke:#6c8fff,color:#e8eaf2
+    style B fill:#1a1e2e,stroke:#6c8fff,color:#8891b0
+    style C fill:#1a1e2e,stroke:#2dd4bf,color:#8891b0
+    style D fill:#1a1e2e,stroke:#4ade80,color:#8891b0
+    style E fill:#1a1e2e,stroke:#fbbf24,color:#8891b0
+    style F fill:#1a1e2e,stroke:#f472b6,color:#8891b0
+    style G fill:#2a1a1a,stroke:#f87171,color:#f87171
+    style H fill:#2a1a1a,stroke:#f87171,color:#f87171
+    style I fill:#2a1a1a,stroke:#f87171,color:#f87171
+    style J fill:#2a1a1a,stroke:#f87171,color:#f87171
+    style K fill:#2a1a1a,stroke:#f87171,color:#f87171
+    </div>
+  </div>
+
+</div>
+
+<hr class="divider">
+
+<!-- ──────────────────────────────────────── SRP ──────────────────── -->
+<div class="section" id="srp">
+  <div class="section-label">Principle 1 of 5</div>
+  <div class="section-title"><span class="num" style="color:var(--accent)">S</span> Single Responsibility Principle</div>
+  <div class="section-desc">The most violated principle in every .NET codebase. Also the most misunderstood.</div>
+
+  <div class="principle-header">
+    <div class="big-letter" style="color:var(--accent)">S</div>
+    <div class="meta">
+      <h2>Single Responsibility Principle</h2>
+      <div class="full-name">Robert C. Martin, 2003</div>
+      <div class="definition">
+        <strong>A class should have only one reason to change.</strong><br>
+        Note: this is about <em>reasons to change</em> — not about having only one method. A class can have 20 methods and still have one reason to change. A class with two methods that satisfy two different business actors already violates SRP.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">💡</div>
+    <div><strong>Architect's Lens:</strong> The word "responsibility" is deceptive. Martin's later clarification is sharper: a class should serve a single <em>actor</em> — a group of stakeholders who have authority to change its requirements. If finance and operations both have authority to change InvoiceProcessor, it violates SRP regardless of how focused the code looks.</div>
+  </div>
+
+  <h3 style="margin:1.5rem 0 0.75rem;font-size:1.05rem;font-weight:600;">The Problem Before SRP</h3>
+  <p style="color:var(--muted);font-size:0.93rem;margin-bottom:1.25rem;">Classic ASP.NET WebForms and early MVC codebases routinely produced controllers like this — God Classes that handled everything from HTTP parsing to database writes to email delivery:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label wrong">❌ The God Class — Classic .NET Anti-Pattern</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// A real class from a 2010-era ASP.NET MVC project — 1,200 lines</span>
+<span class="kw">public class</span> <span class="type">OrderController</span> : Controller
+{
+    <span class="comment">// Reason 1: HTTP request parsing (HTTP team owns this)</span>
+    [HttpPost]
+    <span class="kw">public</span> <span class="type">ActionResult</span> <span class="method">ProcessOrder</span>(OrderViewModel vm)
+    {
+        <span class="comment">// Reason 2: Validation (business rules team owns this)</span>
+        <span class="kw">if</span> (vm.Quantity <= 0) <span class="kw">return</span> <span class="method">View</span>(<span class="str">"Error"</span>);
+        <span class="kw">if</span> (vm.CustomerId == Guid.Empty) <span class="kw">return</span> <span class="method">View</span>(<span class="str">"Error"</span>);
+
+        <span class="comment">// Reason 3: Database writes (DBA team owns this)</span>
+        <span class="kw">var</span> order = <span class="kw">new</span> <span class="type">Order</span> { CustomerId = vm.CustomerId, Total = vm.Total };
+        _db.Orders.<span class="method">Add</span>(order);
+        _db.<span class="method">SaveChanges</span>();
+
+        <span class="comment">// Reason 4: Inventory (warehouse team owns this)</span>
+        _db.Inventory.<span class="method">Where</span>(i => i.ProductId == vm.ProductId)
+                     .<span class="method">First</span>().Stock -= vm.Quantity;
+        _db.<span class="method">SaveChanges</span>();
+
+        <span class="comment">// Reason 5: Email notification (comms team owns this)</span>
+        <span class="kw">var</span> smtp = <span class="kw">new</span> <span class="type">SmtpClient</span>(<span class="str">"mail.company.com"</span>);
+        smtp.<span class="method">Send</span>(<span class="str">"noreply@co.com"</span>, vm.Email, <span class="str">"Order Confirmed"</span>, <span class="str">"..."</span>);
+
+        <span class="comment">// Reason 6: PDF receipt (legal team owns this)</span>
+        <span class="kw">var</span> pdf = <span class="kw">new</span> <span class="type">PdfDocument</span>();
+        <span class="comment">// ... 200 more lines ...</span>
+        <span class="kw">return</span> <span class="method">View</span>(<span class="str">"Confirmation"</span>);
+    }
+}</pre></div>
+  </div>
+  <div class="callout danger">
+    <div class="callout-icon">💥</div>
+    <div><strong>Why this kills you in production:</strong> When finance changes invoice format, you touch the same class that stores orders and sends emails. A merge conflict in OrderController is practically guaranteed every sprint. More dangerously: you cannot unit test order validation without an SMTP server and a database.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label correct">✅ SRP Applied — Decomposed by Actor</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// Each class has exactly ONE reason to change</span>
+<span class="comment">// HTTP request handling only — changed by API contract team</span>
+<span class="attr">[ApiController]</span>
+<span class="kw">public class</span> <span class="type">OrdersController</span> : ControllerBase
+{
+    <span class="kw">private readonly</span> <span class="iface">IOrderService</span> _orders;
+
+    <span class="kw">public</span> <span class="type">OrdersController</span>(<span class="iface">IOrderService</span> orders) => _orders = orders;
+
+    <span class="attr">[HttpPost]</span>
+    <span class="kw">public async</span> <span class="type">Task</span>&lt;<span class="type">IActionResult</span>&gt; <span class="method">Create</span>(<span class="type">CreateOrderRequest</span> request)
+    {
+        <span class="kw">var</span> result = <span class="kw">await</span> _orders.<span class="method">PlaceOrderAsync</span>(request);
+        <span class="kw">return</span> result.<span class="method">Match</span>(
+            success => <span class="method">CreatedAtAction</span>(...),
+            error   => <span class="method">BadRequest</span>(error)
+        );
+    }
+}
+
+<span class="comment">// Business orchestration only — changed by operations team</span>
+<span class="kw">public class</span> <span class="type">OrderService</span> : <span class="iface">IOrderService</span>
+{
+    <span class="kw">private readonly</span> <span class="iface">IOrderRepository</span>    _repo;
+    <span class="kw">private readonly</span> <span class="iface">IInventoryService</span>   _inventory;
+    <span class="kw">private readonly</span> <span class="iface">INotificationService</span> _notifications;
+    <span class="kw">private readonly</span> <span class="iface">IOrderValidator</span>     _validator;
+
+    <span class="kw">public async</span> <span class="type">Task</span>&lt;<span class="type">Result</span>&lt;<span class="type">OrderId</span>&gt;&gt; <span class="method">PlaceOrderAsync</span>(<span class="type">CreateOrderRequest</span> req)
+    {
+        <span class="comment">// Each step is owned by a focused class — no direct coupling</span>
+        <span class="kw">var</span> validation = <span class="kw">await</span> _validator.<span class="method">ValidateAsync</span>(req);
+        <span class="kw">if</span> (!validation.IsValid) <span class="kw">return</span> <span class="type">Result</span>.<span class="method">Fail</span>(validation.Errors);
+
+        <span class="kw">var</span> order = Order.<span class="method">Create</span>(req);
+        <span class="kw">await</span> _repo.<span class="method">AddAsync</span>(order);
+        <span class="kw">await</span> _inventory.<span class="method">ReserveAsync</span>(req.Items);
+        <span class="kw">await</span> _notifications.<span class="method">OrderPlacedAsync</span>(order);
+
+        <span class="kw">return</span> <span class="type">Result</span>.<span class="method">Ok</span>(order.Id);
+    }
+}
+
+<span class="comment">// Validation only — changed by business rules team</span>
+<span class="kw">public class</span> <span class="type">OrderValidator</span> : <span class="iface">IOrderValidator</span>
+{
+    <span class="kw">public async</span> <span class="type">Task</span>&lt;<span class="type">ValidationResult</span>&gt; <span class="method">ValidateAsync</span>(<span class="type">CreateOrderRequest</span> req)
+    {
+        <span class="comment">// Fluent Validation, pure logic, no I/O — trivially unit testable</span>
+        <span class="kw">if</span> (req.Quantity <= 0) <span class="kw">return</span> <span class="type">ValidationResult</span>.<span class="method">Fail</span>(<span class="str">"Quantity must be positive"</span>);
+        <span class="kw">if</span> (req.CustomerId == <span class="type">Guid</span>.Empty) <span class="kw">return</span> <span class="type">ValidationResult</span>.<span class="method">Fail</span>(<span class="str">"Invalid customer"</span>);
+        <span class="kw">return</span> <span class="type">ValidationResult</span>.<span class="method">Ok</span>();
+    }
+}</pre></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label trap">⚠️ The Subtle Trap — Over-Decomposition</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// Looks like SRP. Every class does "one thing". But this is fragmentation, not separation.</span>
+<span class="comment">// All three classes below change together every time the order model changes.</span>
+<span class="comment">// That's one reason to change split across three classes — the opposite of the goal.</span>
+
+<span class="kw">public class</span> <span class="type">OrderQuantityValidator</span>  { <span class="comment">/* validates only quantity */</span> }
+<span class="kw">public class</span> <span class="type">OrderCustomerIdValidator</span> { <span class="comment">/* validates only customer id */</span> }
+<span class="kw">public class</span> <span class="type">OrderTotalValidator</span>     { <span class="comment">/* validates only total */</span> }
+
+<span class="comment">// Problem: "validation of an order" is ONE responsibility.
+// The correct decomposition is ONE OrderValidator that handles all order rules.
+// Split only when different actors (different stakeholders) own different rules.</span></pre></div>
+  </div>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">SRP — Decomposition by Actor (Sequence Diagram)</div>
+    <div class="diagram-desc">Each box below represents one actor's change authority. When finance changes the notification format, only NotificationService is touched. OrderService is unmodified.</div>
+    <div class="mermaid">
+sequenceDiagram
+    participant C as OrdersController
+    participant S as OrderService
+    participant V as OrderValidator
+    participant R as OrderRepository
+    participant I as InventoryService
+    participant N as NotificationService
+
+    C->>S: PlaceOrderAsync(request)
+    S->>V: ValidateAsync(request)
+    V-->>S: ValidationResult
+    S->>R: AddAsync(order)
+    R-->>S: OrderId
+    S->>I: ReserveAsync(items)
+    I-->>S: reserved
+    S->>N: OrderPlacedAsync(order)
+    N-->>S: sent
+    S-->>C: Result&lt;OrderId&gt;
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Metric</th><th>Before (God Class)</th><th>After (SRP Applied)</th></tr></thead>
+      <tbody>
+        <tr><td>Unit test coverage possible</td><td class="td-red">~10% (I/O everywhere)</td><td class="td-green">~95% (pure logic isolated)</td></tr>
+        <tr><td>Merge conflicts per sprint</td><td class="td-red">5–8 in OrderController</td><td class="td-green">0–1 (isolated classes)</td></tr>
+        <tr><td>Time to add new notification type</td><td class="td-red">4h (risk of breaking orders)</td><td class="td-green">30m (isolated service)</td></tr>
+        <tr><td>Lines of code per class</td><td class="td-red">800–1200</td><td class="td-green">40–120</td></tr>
+        <tr><td>Cognitive load to review</td><td class="td-red">Entire domain in one file</td><td class="td-green">Single focused concern</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+<hr class="divider">
+
+<!-- ──────────────────────────────────────── OCP ──────────────────── -->
+<div class="section" id="ocp">
+  <div class="section-label">Principle 2 of 5</div>
+  <div class="section-title"><span class="num" style="color:var(--teal)">O</span> Open/Closed Principle</div>
+  <div class="section-desc">The principle that strategy and decorator patterns were invented to satisfy.</div>
+
+  <div class="principle-header">
+    <div class="big-letter" style="color:var(--teal)">O</div>
+    <div class="meta">
+      <h2>Open/Closed Principle</h2>
+      <div class="full-name">Bertrand Meyer, 1988 — reframed by Robert C. Martin</div>
+      <div class="definition">
+        <strong>Software entities should be open for extension, but closed for modification.</strong><br>
+        Meyer's original meaning: a class is closed once it's deployed and depended upon — you don't reopen it. Martin's modern meaning: design with abstractions such that new behaviour can be added by writing new code, not by editing existing code. The implementation technique: strategy pattern, decorator pattern, plugin architectures.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-icon">⚠️</div>
+    <div><strong>The Pre-OCP World:</strong> Before OCP thinking, every new discount type, every new payment provider, every new export format required modifying the same class and re-testing the entire system. An if/else chain or switch statement growing by one case per sprint is the canonical OCP violation signature.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label wrong">❌ OCP Violated — The Expanding Switch Statement</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// Every new discount type requires modifying this class.
+// This class will be touched by every sprint, forever.
+// Cannot be tested without covering all branches.
+// A new developer will inevitably miss a case.</span>
+<span class="kw">public class</span> <span class="type">PricingEngine</span>
+{
+    <span class="kw">public decimal</span> <span class="method">CalculateDiscount</span>(<span class="type">Order</span> order, <span class="kw">string</span> discountType)
+    {
+        <span class="kw">return</span> discountType <span class="kw">switch</span>
+        {
+            <span class="str">"seasonal"</span>  => order.Total * 0.10m,
+            <span class="str">"loyalty"</span>   => order.Total * 0.15m,
+            <span class="str">"bulk"</span>      => order.Quantity > 100 ? order.Total * 0.20m : 0,
+            <span class="comment">// Sprint 8: added "flash" — modified this class</span>
+            <span class="str">"flash"</span>     => DateTime.UtcNow.Hour is >= 12 and &lt;= 14 ? order.Total * 0.25m : 0,
+            <span class="comment">// Sprint 15: added "referral" — modified again</span>
+            <span class="str">"referral"</span>  => order.HasReferralCode ? order.Total * 0.05m : 0,
+            _           => 0
+        };
+    }
+}</pre></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label correct">✅ OCP Applied — Strategy Pattern with DI Registration</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// PricingEngine NEVER changes when a new discount type is added.
+// New discount = new class implementing IDiscountStrategy.
+// Register it in DI and the engine picks it up automatically.</span>
+
+<span class="kw">public interface</span> <span class="iface">IDiscountStrategy</span>
+{
+    <span class="kw">string</span> DiscountType { <span class="kw">get</span>; }
+    <span class="kw">decimal</span> <span class="method">Calculate</span>(<span class="type">Order</span> order);
+    <span class="kw">bool</span> <span class="method">IsApplicable</span>(<span class="type">Order</span> order);
+}
+
+<span class="comment">// Existing class — never touched again after initial creation</span>
+<span class="kw">public class</span> <span class="type">SeasonalDiscountStrategy</span> : <span class="iface">IDiscountStrategy</span>
+{
+    <span class="kw">public string</span> DiscountType => <span class="str">"seasonal"</span>;
+    <span class="kw">public bool</span> <span class="method">IsApplicable</span>(<span class="type">Order</span> order) => <span class="kw">true</span>;
+    <span class="kw">public decimal</span> <span class="method">Calculate</span>(<span class="type">Order</span> order) => order.Total * 0.10m;
+}
+
+<span class="comment">// New in Sprint 8: zero changes to PricingEngine required</span>
+<span class="kw">public class</span> <span class="type">FlashSaleDiscountStrategy</span> : <span class="iface">IDiscountStrategy</span>
+{
+    <span class="kw">public string</span> DiscountType => <span class="str">"flash"</span>;
+    <span class="kw">public bool</span> <span class="method">IsApplicable</span>(<span class="type">Order</span> order) =>
+        <span class="type">DateTime</span>.UtcNow.Hour is >= 12 <span class="kw">and</span> &lt;= 14;
+    <span class="kw">public decimal</span> <span class="method">Calculate</span>(<span class="type">Order</span> order) => order.Total * 0.25m;
+}
+
+<span class="comment">// PricingEngine is CLOSED for modification, OPEN for extension via DI</span>
+<span class="kw">public class</span> <span class="type">PricingEngine</span>
+{
+    <span class="comment">// All strategies injected — new one added? DI resolves it automatically</span>
+    <span class="kw">private readonly</span> <span class="type">IEnumerable</span>&lt;<span class="iface">IDiscountStrategy</span>&gt; _strategies;
+
+    <span class="kw">public</span> <span class="type">PricingEngine</span>(<span class="type">IEnumerable</span>&lt;<span class="iface">IDiscountStrategy</span>&gt; strategies)
+        => _strategies = strategies;
+
+    <span class="kw">public decimal</span> <span class="method">CalculateDiscount</span>(<span class="type">Order</span> order, <span class="kw">string</span> discountType)
+    {
+        <span class="kw">var</span> strategy = _strategies
+            .<span class="method">FirstOrDefault</span>(s => s.DiscountType == discountType
+                              && s.<span class="method">IsApplicable</span>(order));
+        <span class="kw">return</span> strategy?.<span class="method">Calculate</span>(order) ?? 0m;
+    }
+}
+
+<span class="comment">// Program.cs — new strategy added by registering, not modifying</span>
+builder.Services.<span class="method">AddScoped</span>&lt;<span class="iface">IDiscountStrategy</span>, <span class="type">SeasonalDiscountStrategy</span>&gt;();
+builder.Services.<span class="method">AddScoped</span>&lt;<span class="iface">IDiscountStrategy</span>, <span class="type">FlashSaleDiscountStrategy</span>&gt;();</pre></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label trap">⚠️ Subtle Trap — OCP via Inheritance (Classic Mistake)</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// Looks OCP-compliant. But inheritance-based extension in C# leads to
+// fragile base class syndrome. A change to the base class breaks all subtypes.
+// Strategy/composition is almost always the right OCP implementation in .NET.</span>
+
+<span class="kw">public abstract class</span> <span class="type">ReportGenerator</span>
+{
+    <span class="kw">public virtual string</span> <span class="method">Generate</span>(<span class="type">ReportData</span> data) => <span class="method">BuildBase</span>(data);
+    <span class="kw">protected abstract string</span> <span class="method">BuildBase</span>(<span class="type">ReportData</span> data);
+    <span class="comment">// Adding ANY virtual method here is a breaking change for all subclasses</span>
+}
+
+<span class="comment">// After 8 subclasses and 3 years, you have 47 virtual method overrides
+// and no developer can confidently change the base class.
+// Prefer: IReportRenderer strategy + decorator pipeline instead.</span></pre></div>
+  </div>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">OCP — Strategy Pattern Plugin Architecture</div>
+    <div class="diagram-desc">New discount strategies are registered in DI and automatically resolved. PricingEngine never changes; the system grows by adding files, not editing them.</div>
+    <div class="mermaid">
+graph TD
+    A[PricingEngine\nCLOSED for modification] --> B[IDiscountStrategy\nAbstraction]
+    B --> C[SeasonalDiscountStrategy\nSprint 1]
+    B --> D[LoyaltyDiscountStrategy\nSprint 1]
+    B --> E[FlashSaleStrategy\nSprint 8 - NEW FILE]
+    B --> F[ReferralStrategy\nSprint 15 - NEW FILE]
+    G[DI Container\nProgram.cs] -->|resolves all| A
+
+    style A fill:#0d2a1a,stroke:#2dd4bf,color:#2dd4bf
+    style B fill:#1a1e2e,stroke:#4a5568,color:#8891b0
+    style C fill:#1e2240,stroke:#6c8fff,color:#e8eaf2
+    style D fill:#1e2240,stroke:#6c8fff,color:#e8eaf2
+    style E fill:#1a3020,stroke:#4ade80,color:#4ade80
+    style F fill:#1a3020,stroke:#4ade80,color:#4ade80
+    style G fill:#1a1e2e,stroke:#4a5568,color:#8891b0
+    </div>
+  </div>
+
+</div>
+<hr class="divider">
+
+<!-- ──────────────────────────────────────── LSP ──────────────────── -->
+<div class="section" id="lsp">
+  <div class="section-label">Principle 3 of 5</div>
+  <div class="section-title"><span class="num" style="color:var(--green)">L</span> Liskov Substitution Principle</div>
+  <div class="section-desc">The most technically precise of the five. Violations cause silent bugs, not obvious failures.</div>
+
+  <div class="principle-header">
+    <div class="big-letter" style="color:var(--green)">L</div>
+    <div class="meta">
+      <h2>Liskov Substitution Principle</h2>
+      <div class="full-name">Barbara Liskov, 1987 — formal type theory foundation</div>
+      <div class="definition">
+        <strong>If S is a subtype of T, then objects of type T may be replaced with objects of type S without altering any of the desirable properties of the program.</strong><br>
+        Practically: a subclass must honour the contract of its base. It must not strengthen preconditions, weaken postconditions, throw exceptions the base never threw, or change invariants. If you need a runtime <code>is</code> check to call a method safely, you have an LSP violation.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-icon">⚠️</div>
+    <div><strong>The Rectangle/Square Problem — The Classic Example:</strong> A Square IS-A Rectangle mathematically, but is NOT substitutable for Rectangle in code — setting Width changes Height, which violates the caller's assumption that dimensions are independent. LSP forces you to question inheritance hierarchies that feel natural.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label wrong">❌ LSP Violated — The Classic Rectangle/Square</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="kw">public class</span> <span class="type">Rectangle</span>
+{
+    <span class="kw">public virtual int</span> Width  { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public virtual int</span> Height { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span> Area() => Width * Height;
+}
+
+<span class="kw">public class</span> <span class="type">Square</span> : <span class="type">Rectangle</span>
+{
+    <span class="comment">// LSP violation: setter changes both dimensions — breaks Rectangle's contract</span>
+    <span class="kw">public override int</span> Width  { <span class="kw">set</span> => <span class="kw">base</span>.Width = <span class="kw">base</span>.Height = value; }
+    <span class="kw">public override int</span> Height { <span class="kw">set</span> => <span class="kw">base</span>.Width = <span class="kw">base</span>.Height = value; }
+}
+
+<span class="comment">// This code breaks silently with a Square:</span>
+<span class="kw">void</span> <span class="method">ResizeWidth</span>(<span class="type">Rectangle</span> r)
+{
+    r.Height = 4;
+    r.Width = 5;
+    <span class="comment">// Expected: Area = 20. With Square: Area = 25. Silent data corruption.</span>
+    <span class="method">Assert</span>(r.<span class="method">Area</span>() == 20); <span class="comment">// FAILS for Square</span>
+}</pre></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label correct">✅ LSP Applied — Real-World Payment Provider Example</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// Payment processing scenario — a common LSP violation site in enterprise .NET</span>
+<span class="kw">public interface</span> <span class="iface">IPaymentProvider</span>
+{
+    <span class="comment">// CONTRACT: returns PaymentResult — never throws, never returns null</span>
+    <span class="type">Task</span>&lt;<span class="type">PaymentResult</span>&gt; <span class="method">ChargeAsync</span>(<span class="type">PaymentRequest</span> request);
+    <span class="comment">// CONTRACT: amount must be positive, within 90 days of charge</span>
+    <span class="type">Task</span>&lt;<span class="type">RefundResult</span>&gt; <span class="method">RefundAsync</span>(<span class="type">RefundRequest</span> request);
+}
+
+<span class="comment">// Both implementations fully honour the contract:</span>
+<span class="kw">public class</span> <span class="type">StripePaymentProvider</span> : <span class="iface">IPaymentProvider</span>
+{
+    <span class="kw">public async</span> <span class="type">Task</span>&lt;<span class="type">PaymentResult</span>&gt; <span class="method">ChargeAsync</span>(<span class="type">PaymentRequest</span> request)
+    {
+        <span class="comment">// Stripe supports any positive amount — contract honoured</span>
+        <span class="kw">var</span> charge = <span class="kw">await</span> _stripe.ChargeCreateAsync(...);
+        <span class="kw">return</span> <span class="type">PaymentResult</span>.<span class="method">FromStripe</span>(charge);
+    }
+    <span class="comment">// Supports refunds up to 90 days — contract honoured</span>
+    <span class="kw">public async</span> <span class="type">Task</span>&lt;<span class="type">RefundResult</span>&gt; <span class="method">RefundAsync</span>(<span class="type">RefundRequest</span> request) { ... }
+}
+
+<span class="kw">public class</span> <span class="type">PayPalPaymentProvider</span> : <span class="iface">IPaymentProvider</span>
+{
+    <span class="kw">public async</span> <span class="type">Task</span>&lt;<span class="type">PaymentResult</span>&gt; <span class="method">ChargeAsync</span>(<span class="type">PaymentRequest</span> request)
+    {
+        <span class="comment">// PayPal also returns PaymentResult — contract honoured</span>
+        <span class="kw">var</span> resp = <span class="kw">await</span> _paypal.ExecutePaymentAsync(...);
+        <span class="kw">return</span> <span class="type">PaymentResult</span>.<span class="method">FromPayPal</span>(resp);
+    }
+    <span class="kw">public async</span> <span class="type">Task</span>&lt;<span class="type">RefundResult</span>&gt; <span class="method">RefundAsync</span>(<span class="type">RefundRequest</span> request) { ... }
+}
+
+<span class="comment">// Consumer: works correctly with ANY registered IPaymentProvider
+// Zero type-checking. Zero null guards. Zero exceptions from broken contracts.</span>
+<span class="kw">public class</span> <span class="type">PaymentService</span>
+{
+    <span class="kw">private readonly</span> <span class="iface">IPaymentProvider</span> _provider;
+    <span class="kw">public</span> <span class="type">PaymentService</span>(<span class="iface">IPaymentProvider</span> provider) => _provider = provider;
+
+    <span class="kw">public async</span> <span class="type">Task</span> <span class="method">ProcessAsync</span>(<span class="type">Order</span> order)
+    {
+        <span class="kw">var</span> result = <span class="kw">await</span> _provider.<span class="method">ChargeAsync</span>(<span class="kw">new</span> <span class="type">PaymentRequest</span>(order));
+        <span class="comment">// No: if (provider is StripePaymentProvider) { ... }
+        // No: if (result == null) throw ...
+        // Just consume the contract-guaranteed result</span>
+        <span class="kw">if</span> (result.Success) <span class="kw">await</span> <span class="method">FulfillOrderAsync</span>(order);
+    }
+}</pre></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label trap">⚠️ The Subtle LSP Violation — NotSupportedException</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// The most common LSP violation in enterprise .NET:
+// An implementation throws NotSupportedException for a method the interface declares.
+// This FORCES every consumer to wrap calls in try/catch — or discover it at runtime.</span>
+
+<span class="kw">public class</span> <span class="type">ReadOnlyOrderRepository</span> : <span class="iface">IOrderRepository</span>
+{
+    <span class="kw">public</span> <span class="type">Task</span>&lt;<span class="type">Order</span>&gt; <span class="method">GetByIdAsync</span>(<span class="type">Guid</span> id) => <span class="comment">/* works */</span>;
+
+    <span class="comment">// LSP violation: IOrderRepository contract says this should work</span>
+    <span class="kw">public</span> <span class="type">Task</span> <span class="method">AddAsync</span>(<span class="type">Order</span> order)
+        => <span class="kw">throw new</span> <span class="type">NotSupportedException</span>(<span class="str">"Read-only repository"</span>);
+
+    <span class="comment">// FIX: Segregate the interface (see ISP section)
+    // IReadOnlyOrderRepository { GetByIdAsync }
+    // IOrderRepository : IReadOnlyOrderRepository { AddAsync }
+    // ReadOnlyOrderRepository implements IReadOnlyOrderRepository only</span>
+}</pre></div>
+  </div>
+
+</div>
+<hr class="divider">
+
+<!-- ──────────────────────────────────────── ISP ──────────────────── -->
+<div class="section" id="isp">
+  <div class="section-label">Principle 4 of 5</div>
+  <div class="section-title"><span class="num" style="color:var(--amber)">I</span> Interface Segregation Principle</div>
+  <div class="section-desc">The principle that directly prevents the NotSupportedException LSP violation above.</div>
+
+  <div class="principle-header">
+    <div class="big-letter" style="color:var(--amber)">I</div>
+    <div class="meta">
+      <h2>Interface Segregation Principle</h2>
+      <div class="full-name">Robert C. Martin — coined while consulting at Xerox</div>
+      <div class="definition">
+        <strong>Clients should not be forced to depend on interfaces they do not use.</strong><br>
+        Large "fat" interfaces force implementing classes to provide stub or throwing implementations for methods they don't support — a direct path to LSP violations. The solution: many small, focused interfaces. In .NET, this pairs naturally with DI composition and the multiple-interface registration pattern.
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label wrong">❌ ISP Violated — The Fat IWorker Interface (Classic)</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// Fat interface: forces every implementer to stub what they don't support</span>
+<span class="kw">public interface</span> <span class="iface">IOrderRepository</span>
+{
+    <span class="comment">// Read operations</span>
+    <span class="type">Task</span>&lt;<span class="type">Order</span>&gt;       <span class="method">GetByIdAsync</span>(<span class="type">Guid</span> id);
+    <span class="type">Task</span>&lt;<span class="type">List</span>&lt;<span class="type">Order</span>&gt;&gt; <span class="method">GetAllAsync</span>(<span class="type">OrderFilter</span> filter);
+    <span class="comment">// Write operations</span>
+    <span class="type">Task</span>            <span class="method">AddAsync</span>(<span class="type">Order</span> order);
+    <span class="type">Task</span>            <span class="method">UpdateAsync</span>(<span class="type">Order</span> order);
+    <span class="type">Task</span>            <span class="method">DeleteAsync</span>(<span class="type">Guid</span> id);
+    <span class="comment">// Reporting (completely different actor)</span>
+    <span class="type">Task</span>&lt;<span class="type">OrderSummary</span>&gt; <span class="method">GetSummaryAsync</span>(<span class="type">DateRange</span> range);
+    <span class="type">Task</span>&lt;<span class="type">byte</span>[]&gt;       <span class="method">ExportToCsvAsync</span>(<span class="type">DateRange</span> range);
+}
+
+<span class="comment">// Now a read-only cache implementation MUST provide stubs:
+// public Task AddAsync(Order order) => throw new NotSupportedException();
+// And an OLAP reporting store MUST provide CRUD stubs it never needs.</span></pre></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label correct">✅ ISP Applied — Segregated Interfaces with CQRS Alignment</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// Separate interfaces by client consumption pattern</span>
+<span class="kw">public interface</span> <span class="iface">IOrderReader</span>
+{
+    <span class="type">Task</span>&lt;<span class="type">Order</span>&gt;       <span class="method">GetByIdAsync</span>(<span class="type">Guid</span> id);
+    <span class="type">Task</span>&lt;<span class="type">List</span>&lt;<span class="type">Order</span>&gt;&gt; <span class="method">GetAllAsync</span>(<span class="type">OrderFilter</span> filter);
+}
+
+<span class="kw">public interface</span> <span class="iface">IOrderWriter</span>
+{
+    <span class="type">Task</span> <span class="method">AddAsync</span>(<span class="type">Order</span> order);
+    <span class="type">Task</span> <span class="method">UpdateAsync</span>(<span class="type">Order</span> order);
+    <span class="type">Task</span> <span class="method">DeleteAsync</span>(<span class="type">Guid</span> id);
+}
+
+<span class="kw">public interface</span> <span class="iface">IOrderReporter</span>
+{
+    <span class="type">Task</span>&lt;<span class="type">OrderSummary</span>&gt; <span class="method">GetSummaryAsync</span>(<span class="type">DateRange</span> range);
+    <span class="type">Task</span>&lt;<span class="type">byte</span>[]&gt;       <span class="method">ExportToCsvAsync</span>(<span class="type">DateRange</span> range);
+}
+
+<span class="comment">// Full SQL implementation: can implement all three</span>
+<span class="kw">public class</span> <span class="type">SqlOrderRepository</span> : <span class="iface">IOrderReader</span>, <span class="iface">IOrderWriter</span>, <span class="iface">IOrderReporter</span>
+{
+    <span class="comment">// All methods meaningfully implemented — no stubs, no throws</span>
+}
+
+<span class="comment">// Redis read cache: implements IOrderReader ONLY — no forced stubs</span>
+<span class="kw">public class</span> <span class="type">RedisOrderCache</span> : <span class="iface">IOrderReader</span>
+{
+    <span class="kw">public async</span> <span class="type">Task</span>&lt;<span class="type">Order</span>&gt; <span class="method">GetByIdAsync</span>(<span class="type">Guid</span> id)
+    {
+        <span class="kw">var</span> cached = <span class="kw">await</span> _redis.<span class="method">GetAsync</span>($<span class="str">"order:{id}"</span>);
+        <span class="kw">return</span> cached is <span class="kw">null</span> ? <span class="kw">null</span> : <span class="type">JsonSerializer</span>.<span class="method">Deserialize</span>&lt;<span class="type">Order</span>&gt;(cached);
+    }
+    <span class="kw">public async</span> <span class="type">Task</span>&lt;<span class="type">List</span>&lt;<span class="type">Order</span>&gt;&gt; <span class="method">GetAllAsync</span>(<span class="type">OrderFilter</span> f) => ...;
+    <span class="comment">// No AddAsync, no UpdateAsync, no ExportToCsvAsync — not its concern</span>
+}
+
+<span class="comment">// Consumers depend only on what they need</span>
+<span class="kw">public class</span> <span class="type">OrderQueryHandler</span>(<span class="iface">IOrderReader</span> reader)    { ... } <span class="comment">// reads only</span>
+<span class="kw">public class</span> <span class="type">OrderCommandHandler</span>(<span class="iface">IOrderWriter</span> writer)   { ... } <span class="comment">// writes only</span>
+<span class="kw">public class</span> <span class="type">OrderReportService</span>(<span class="iface">IOrderReporter</span> reporter) { ... } <span class="comment">// reports only</span>
+
+<span class="comment">// DI registration</span>
+builder.Services.<span class="method">AddScoped</span>&lt;<span class="iface">IOrderReader</span>,   <span class="type">RedisOrderCache</span>&gt;();    <span class="comment">// cache for reads</span>
+builder.Services.<span class="method">AddScoped</span>&lt;<span class="iface">IOrderWriter</span>,   <span class="type">SqlOrderRepository</span>&gt;(); <span class="comment">// SQL for writes</span>
+builder.Services.<span class="method">AddScoped</span>&lt;<span class="iface">IOrderReporter</span>, <span class="type">SqlOrderRepository</span>&gt;(); <span class="comment">// SQL for reports</span></pre></div>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-icon">✅</div>
+    <div><strong>Architect's take:</strong> ISP is where SOLID and CQRS naturally converge. Separating IOrderReader from IOrderWriter is the same decision as separating query models from command models. If you're applying CQRS in your .NET system, you're already doing ISP correctly.</div>
+  </div>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">ISP — Interface Segregation vs Fat Interface</div>
+    <div class="diagram-desc">Left: fat interface forces Redis cache to implement methods it cannot support. Right: segregated interfaces allow each implementation to declare only what it can deliver.</div>
+    <div class="mermaid">
+graph LR
+    subgraph BEFORE["❌ Fat Interface"]
+        FA[IOrderRepository\n8 methods] --> FC1[SqlRepo\n✓ all methods]
+        FA --> FC2[RedisCache\n✓ reads\n✗ AddAsync — throws!\n✗ DeleteAsync — throws!]
+    end
+    subgraph AFTER["✅ Segregated Interfaces"]
+        A1[IOrderReader\n2 methods] --> B1[SqlRepo]
+        A2[IOrderWriter\n3 methods] --> B1
+        A3[IOrderReporter\n2 methods] --> B1
+        A1 --> B2[RedisCache\nOnly reads — clean!]
+    end
+
+    style FA fill:#2a1a1a,stroke:#f87171,color:#f87171
+    style A1 fill:#0d2a1a,stroke:#4ade80,color:#4ade80
+    style A2 fill:#0d2a1a,stroke:#4ade80,color:#4ade80
+    style A3 fill:#0d2a1a,stroke:#4ade80,color:#4ade80
+    style FC2 fill:#2a1a1a,stroke:#f87171,color:#f87171
+    style B2 fill:#1a3020,stroke:#4ade80,color:#e8eaf2
+    </div>
+  </div>
+
+</div>
+<hr class="divider">
+
+<!-- ──────────────────────────────────────── DIP ──────────────────── -->
+<div class="section" id="dip">
+  <div class="section-label">Principle 5 of 5</div>
+  <div class="section-title"><span class="num" style="color:var(--pink)">D</span> Dependency Inversion Principle</div>
+  <div class="section-desc">The foundation of testable .NET code and the entire DI ecosystem.</div>
+
+  <div class="principle-header">
+    <div class="big-letter" style="color:var(--pink)">D</div>
+    <div class="meta">
+      <h2>Dependency Inversion Principle</h2>
+      <div class="full-name">Robert C. Martin — precursor to all modern DI containers</div>
+      <div class="definition">
+        <strong>(a) High-level modules should not depend on low-level modules. Both should depend on abstractions.</strong><br>
+        <strong>(b) Abstractions should not depend on details. Details should depend on abstractions.</strong><br>
+        In .NET: your domain and application layers reference interfaces only. Infrastructure (SqlServer, Redis, SMTP) implements those interfaces. The dependency arrow is reversed from the traditional direction — hence "inversion".
+      </div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">💡</div>
+    <div><strong>DIP ≠ Dependency Injection.</strong> DI is a <em>technique</em> to achieve DIP. DIP is the <em>principle</em>. You can violate DIP even with a DI container — by passing concrete types through it instead of interfaces. The container resolves; the principle is about what you wire to what.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label wrong">❌ DIP Violated — High Level Depends on Low Level</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// OrderService is a high-level domain class.
+// It directly instantiates SqlOrderRepository — a low-level infrastructure detail.
+// To test OrderService: you need a SQL database.
+// To switch to Cosmos: you rewrite OrderService.</span>
+
+<span class="kw">public class</span> <span class="type">OrderService</span>
+{
+    <span class="comment">// DIP violation: concrete dependency, instantiated directly</span>
+    <span class="kw">private readonly</span> <span class="type">SqlOrderRepository</span> _repo = <span class="kw">new</span> <span class="type">SqlOrderRepository</span>();
+    <span class="kw">private readonly</span> <span class="type">SmtpEmailSender</span> _email = <span class="kw">new</span> <span class="type">SmtpEmailSender</span>(<span class="str">"mail.co.com"</span>);
+
+    <span class="kw">public async</span> <span class="type">Task</span> <span class="method">PlaceOrderAsync</span>(<span class="type">Order</span> order)
+    {
+        <span class="kw">await</span> _repo.<span class="method">AddAsync</span>(order); <span class="comment">// coupled to SQL</span>
+        <span class="kw">await</span> _email.<span class="method">SendAsync</span>(...); <span class="comment">// coupled to SMTP</span>
+    }
+}</pre></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label correct">✅ DIP Applied — Clean Architecture Dependency Graph</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// DOMAIN layer (innermost) — owns the abstractions, depends on nothing external</span>
+<span class="comment">// Domain/Abstractions/IOrderRepository.cs</span>
+<span class="kw">namespace</span> Domain.Abstractions;
+
+<span class="kw">public interface</span> <span class="iface">IOrderRepository</span>
+{
+    <span class="type">Task</span>&lt;<span class="type">Order</span>&gt; <span class="method">GetByIdAsync</span>(<span class="type">Guid</span> id, <span class="type">CancellationToken</span> ct = <span class="kw">default</span>);
+    <span class="type">Task</span>        <span class="method">AddAsync</span>(<span class="type">Order</span> order, <span class="type">CancellationToken</span> ct = <span class="kw">default</span>);
+}
+
+<span class="kw">public interface</span> <span class="iface">IEmailSender</span>
+{
+    <span class="type">Task</span> <span class="method">SendAsync</span>(<span class="type">EmailMessage</span> message, <span class="type">CancellationToken</span> ct = <span class="kw">default</span>);
+}
+
+<span class="comment">// APPLICATION layer — depends on Domain abstractions, not on Infrastructure</span>
+<span class="comment">// Application/Orders/OrderService.cs</span>
+<span class="kw">public class</span> <span class="type">OrderService</span>
+{
+    <span class="comment">// Constructor injection — both resolved by DI at runtime</span>
+    <span class="kw">private readonly</span> <span class="iface">IOrderRepository</span> _repo;
+    <span class="kw">private readonly</span> <span class="iface">IEmailSender</span>     _email;
+
+    <span class="kw">public</span> <span class="type">OrderService</span>(<span class="iface">IOrderRepository</span> repo, <span class="iface">IEmailSender</span> email)
+    {
+        _repo  = repo;
+        _email = email;
+    }
+
+    <span class="kw">public async</span> <span class="type">Task</span> <span class="method">PlaceOrderAsync</span>(<span class="type">Order</span> order, <span class="type">CancellationToken</span> ct = <span class="kw">default</span>)
+    {
+        <span class="comment">// OrderService has NO knowledge of SQL, SMTP, or any concrete tech</span>
+        <span class="kw">await</span> _repo.<span class="method">AddAsync</span>(order, ct);
+        <span class="kw">await</span> _email.<span class="method">SendAsync</span>(<span class="kw">new</span> <span class="type">EmailMessage</span>(...), ct);
+    }
+}
+
+<span class="comment">// INFRASTRUCTURE layer — implements Domain abstractions, depends on concrete tech</span>
+<span class="comment">// Infrastructure/Persistence/SqlOrderRepository.cs</span>
+<span class="kw">public class</span> <span class="type">SqlOrderRepository</span> : <span class="iface">IOrderRepository</span>
+{
+    <span class="kw">private readonly</span> <span class="type">AppDbContext</span> _db;
+    <span class="kw">public</span> <span class="type">SqlOrderRepository</span>(<span class="type">AppDbContext</span> db) => _db = db;
+
+    <span class="kw">public async</span> <span class="type">Task</span> <span class="method">AddAsync</span>(<span class="type">Order</span> order, <span class="type">CancellationToken</span> ct)
+    {
+        _db.Orders.<span class="method">Add</span>(order);
+        <span class="kw">await</span> _db.<span class="method">SaveChangesAsync</span>(ct);
+    }
+    <span class="kw">public</span> <span class="type">Task</span>&lt;<span class="type">Order</span>&gt; <span class="method">GetByIdAsync</span>(<span class="type">Guid</span> id, <span class="type">CancellationToken</span> ct)
+        => _db.Orders.<span class="method">FindAsync</span>(<span class="kw">new object</span>[] { id }, ct).<span class="method">AsTask</span>();
+}
+
+<span class="comment">// COMPOSITION ROOT (Program.cs) — the ONLY place concretions are named</span>
+builder.Services.<span class="method">AddScoped</span>&lt;<span class="iface">IOrderRepository</span>, <span class="type">SqlOrderRepository</span>&gt;();
+builder.Services.<span class="method">AddScoped</span>&lt;<span class="iface">IEmailSender</span>, <span class="type">SmtpEmailSender</span>&gt;();
+builder.Services.<span class="method">AddScoped</span>&lt;<span class="type">OrderService</span>&gt;();</pre></div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label trap">⚠️ DIP Trap — Interface in the Wrong Layer</span>
+      <span class="lang-badge">C#</span>
+    </div>
+    <div class="code-body"><pre><span class="comment">// DIP trap: the interface is defined in the Infrastructure layer.
+// This means Application depends on Infrastructure's namespace — still wrong direction.
+// IOrderRepository must live in Domain, not in Infrastructure.Abstractions.
+
+// WRONG namespace:
+namespace Infrastructure.Abstractions;  // 🚫 Domain should own its ports
+public interface IOrderRepository { ... }
+
+// Application layer would then reference Infrastructure — circular dependency risk
+// and violation of the inversion: Infrastructure still "owns" the abstraction.
+
+// CORRECT: Domain owns its own abstractions
+namespace Domain.Abstractions;          // ✅
+public interface IOrderRepository { ... }
+
+// Clean Architecture rule: dependency arrows ALWAYS point inward (toward Domain)</span></pre></div>
+  </div>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">DIP — Clean Architecture Dependency Direction</div>
+    <div class="diagram-desc">All arrows point inward. Infrastructure implements Domain interfaces. Domain never references Infrastructure. This is the classic Clean Architecture / Onion Architecture dependency graph for .NET.</div>
+    <div class="mermaid">
+graph TD
+    subgraph INFRA["Infrastructure Layer"]
+        I1[SqlOrderRepository]
+        I2[SmtpEmailSender]
+        I3[RedisCache]
+    end
+    subgraph APP["Application Layer"]
+        A1[OrderService]
+        A2[OrderCommandHandler]
+    end
+    subgraph DOMAIN["Domain Layer — owns the abstractions"]
+        D1[IOrderRepository]
+        D2[IEmailSender]
+        D3[Order\nDomain Entity]
+    end
+    subgraph COMP["Composition Root\nProgram.cs only"]
+        C1[DI Container\nWires Concretions]
+    end
+
+    I1 -->|implements| D1
+    I2 -->|implements| D2
+    A1 -->|depends on| D1
+    A1 -->|depends on| D2
+    A2 -->|depends on| D1
+    C1 -->|registers| I1
+    C1 -->|registers| I2
+
+    style DOMAIN fill:#0d2a1a,stroke:#4ade80,color:#4ade80
+    style APP fill:#1e2240,stroke:#6c8fff,color:#6c8fff
+    style INFRA fill:#1a1e2e,stroke:#4a5568,color:#8891b0
+    style COMP fill:#2a1a0d,stroke:#fbbf24,color:#fbbf24
+    </div>
+  </div>
+
+</div>
+<hr class="divider">
+
+<!-- ──────────────────────────────────────── INTERACTIONS ──────────────────── -->
+<div class="section" id="interactions">
+  <div class="section-label">Advanced Section</div>
+  <div class="section-title"><span class="num">§6</span> How the Principles Interact</div>
+  <div class="section-desc">SOLID principles are not independent — they reinforce and enable each other. Understanding their relationships is what separates architect-level thinking from developer-level compliance.</div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>When you apply…</th><th>It enables…</th><th>Because…</th></tr></thead>
+      <tbody>
+        <tr><td><strong>SRP</strong></td><td>OCP becomes feasible</td><td>Small, focused classes are easier to make open/closed because there's less to protect from modification</td></tr>
+        <tr><td><strong>ISP</strong></td><td>LSP violations eliminated</td><td>Small interfaces mean no implementation is forced to stub unsupported methods — the root LSP violation in practice</td></tr>
+        <tr><td><strong>DIP</strong></td><td>OCP implemented correctly</td><td>Depending on abstractions is the mechanism by which extension without modification is achieved</td></tr>
+        <tr><td><strong>LSP</strong></td><td>DIP contracts honoured</td><td>If subtypes violate LSP, swapping one DI registration for another breaks the consumer — undermining the whole point of DIP</td></tr>
+        <tr><td><strong>OCP + DIP</strong></td><td>Plugin architecture</td><td>Abstractions (DIP) + extension without modification (OCP) = new implementations added as plugins, zero existing code changed</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">SOLID Principle Dependency Map</div>
+    <div class="diagram-desc">This diagram shows which principles enable or reinforce others. DIP is the foundation that most other principles build on in a .NET context.</div>
+    <div class="mermaid">
+graph LR
+    DIP[DIP\nDependency Inversion] --> OCP[OCP\nOpen/Closed]
+    DIP --> LSP[LSP\nLiskov Substitution]
+    ISP[ISP\nInterface Segregation] --> LSP
+    SRP[SRP\nSingle Responsibility] --> OCP
+    OCP --> TEST[Testability]
+    DIP --> TEST
+    LSP --> TEST
+    ISP --> SRP
+
+    style DIP fill:#2a1a3a,stroke:#f472b6,color:#f472b6
+    style OCP fill:#0d1f2a,stroke:#2dd4bf,color:#2dd4bf
+    style LSP fill:#0d2a1a,stroke:#4ade80,color:#4ade80
+    style ISP fill:#2a2000,stroke:#fbbf24,color:#fbbf24
+    style SRP fill:#1a1e3a,stroke:#6c8fff,color:#6c8fff
+    style TEST fill:#1a1e2e,stroke:#4a5568,color:#e8eaf2
+    </div>
+  </div>
+
+</div>
+<hr class="divider">
+
+<!-- ──────────────────────────────────────── ANTI-LIBRARY ──────────────────── -->
+<div class="section" id="antilib">
+  <div class="section-label">Anti-Library</div>
+  <div class="section-title"><span class="num">§7</span> What NEVER to Do</div>
+  <div class="section-desc">The fastest way to improve is to know what the worst developers do — and never do it.</div>
+
+  <div class="anti-list">
+    <div class="anti-item">
+      <div class="never">🚫 NEVER: Put business logic in a Controller or a DbContext</div>
+      <div class="because">💥 BECAUSE: Controllers have an HTTP lifetime and mix HTTP concerns (model binding, response shaping) with domain logic. DbContext holds EF change tracking — business logic there creates untestable, infrastructure-coupled code that cannot be unit tested without SQL Server.</div>
+      <div class="instead">📍 INSTEAD: Controllers call application services. Application services contain domain orchestration. DbContext stays in the repository layer.</div>
+    </div>
+    <div class="anti-item">
+      <div class="never">🚫 NEVER: Use 'new ConcreteClass()' inside a class that isn't a factory</div>
+      <div class="because">💥 BECAUSE: Direct instantiation violates DIP and makes the dependency impossible to replace. Sealing the dependency means you cannot mock it in tests, cannot swap implementations, and cannot intercept it for cross-cutting concerns (logging, retry, caching).</div>
+      <div class="instead">📍 INSTEAD: Declare constructor parameters as interfaces. Let the DI container resolve them at runtime.</div>
+    </div>
+    <div class="anti-item">
+      <div class="never">🚫 NEVER: Create interfaces with more than 5–7 methods</div>
+      <div class="because">💥 BECAUSE: Large interfaces force implementers to stub methods they don't support (NotSupportedException), which is a direct LSP violation waiting to happen. Every new method on a published interface is a breaking change for all implementers.</div>
+      <div class="instead">📍 INSTEAD: Segregate by client consumption pattern. IOrderReader and IOrderWriter instead of IOrderRepository with 10 methods.</div>
+    </div>
+    <div class="anti-item">
+      <div class="never">🚫 NEVER: Use 'is' or 'as' type checks in business logic</div>
+      <div class="because">💥 BECAUSE: Runtime type checking is the code smell that proves LSP was violated. If you're casting to a subtype to call a method not on the interface, either the interface is wrong or the hierarchy is wrong. Type-checking grows — you'll add more cases as more subtypes appear.</div>
+      <div class="instead">📍 INSTEAD: Put the variant behaviour on the abstraction using polymorphism, or use a visitor/strategy pattern if the type hierarchy is genuinely varied.</div>
+    </div>
+    <div class="anti-item">
+      <div class="never">🚫 NEVER: Create a "Util", "Helper", or "Manager" class</div>
+      <div class="because">💥 BECAUSE: These names are SRP violations waiting to happen. "Manager" has no defined responsibility boundary — anything remotely related gets added. Within 6 months, OrderManager is a 1,500-line God Class that every developer is scared to touch.</div>
+      <div class="instead">📍 INSTEAD: Name classes by their responsibility: OrderFulfillmentService, OrderPriceCalculator, OrderStatusTransition. If you can't name it, the class doesn't have a clear reason to exist yet.</div>
+    </div>
+    <div class="anti-item">
+      <div class="never">🚫 NEVER: Apply all 5 SOLID principles to every class from the start</div>
+      <div class="because">💥 BECAUSE: SOLID is a response to change pressure. Applying DIP + ISP + OCP upfront to a class that has only one caller and one implementation adds indirection overhead with no benefit. This is premature abstraction — it makes the codebase harder to navigate without reducing any real coupling.</div>
+      <div class="instead">📍 INSTEAD: Apply SOLID when you feel the pain it prevents: when the second implementation appears (DIP), when the third conditional branch appears (OCP), when the first God Class method count crosses 500 lines (SRP). SOLID is a refactoring tool first.</div>
+    </div>
+    <div class="anti-item">
+      <div class="never">🚫 NEVER: Put the interface in the Infrastructure layer</div>
+      <div class="because">💥 BECAUSE: The whole point of DIP is that high-level modules own the abstractions they depend on. If Infrastructure.Abstractions.IOrderRepository lives in the infrastructure project, the Application project must reference Infrastructure — undoing the inversion and creating the circular dependency risk that DIP was designed to prevent.</div>
+      <div class="instead">📍 INSTEAD: Domain and Application layers own their abstractions (ports). Infrastructure implements them (adapters). This is the Ports and Adapters / Hexagonal Architecture pattern.</div>
+    </div>
+  </div>
+
+</div>
+<hr class="divider">
+
+<!-- ──────────────────────────────────────── QUICK REF ──────────────────── -->
+<div class="section" id="quickref">
+  <div class="section-label">Quick Reference</div>
+  <div class="section-title"><span class="num">§8</span> Code Review Reference Card</div>
+  <div class="section-desc">Keep this open during architecture review sessions.</div>
+
+  <div class="qref">
+    <div class="qref-header">SOLID — The 5 Mental Models</div>
+    <div class="qref-body">
+      <div class="qref-col">
+        <h4>The 5 Principles in One Sentence Each</h4>
+        <ul>
+          <li><strong style="color:var(--accent)">S</strong> — One class, one actor who can demand a change</li>
+          <li><strong style="color:var(--teal)">O</strong> — Add behaviour by adding a class, not editing one</li>
+          <li><strong style="color:var(--green)">L</strong> — Any subtype must honour the base type's contract fully</li>
+          <li><strong style="color:var(--amber)">I</strong> — Never force a class to implement what it doesn't use</li>
+          <li><strong style="color:var(--pink)">D</strong> — Domain calls interfaces; Infrastructure implements them</li>
+        </ul>
+      </div>
+      <div class="qref-col">
+        <h4>Code Review Red Flags</h4>
+        <ul>
+          <li>Class over 200 lines → potential SRP violation</li>
+          <li>Switch on type string → likely OCP violation</li>
+          <li><code>NotSupportedException</code> in override → LSP violation</li>
+          <li>Interface with 8+ methods → ISP violation</li>
+          <li><code>new ConcreteClass()</code> in business code → DIP violation</li>
+        </ul>
+      </div>
+      <div class="qref-col">
+        <h4>The 3 Questions in Code Review</h4>
+        <ul>
+          <li>Who owns this class? If two teams can demand changes, SRP is violated.</li>
+          <li>What does it take to add a new X? If the answer is "edit this class", OCP is violated.</li>
+          <li>Can I swap the implementation in DI without touching the consumer? If no, DIP is violated.</li>
+        </ul>
+      </div>
+      <div class="qref-col">
+        <h4>Production Readiness</h4>
+        <ul class="checklist done">
+          <li>Business logic testable without database</li>
+          <li>New behaviour = new file, not edited file</li>
+          <li>No <code>is</code> / <code>as</code> in domain logic</li>
+          <li>Interfaces in Domain, not Infrastructure</li>
+          <li>No class named Manager, Helper, or Util</li>
+          <li>Each class has a clear named responsibility</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERFORMANCE PROFILE -->
+  <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">SOLID Violation Impact — Production Metrics</h3>
+  <div class="metrics-grid">
+    <div class="metric">
+      <div class="label">Test Coverage (God Class)</div>
+      <div class="value m-bad">~12%</div>
+      <div class="sub">vs 90%+ with SRP applied</div>
+    </div>
+    <div class="metric">
+      <div class="label">Change Lead Time (OCP violation)</div>
+      <div class="value m-warn">4–8h</div>
+      <div class="sub">test all affected branches</div>
+    </div>
+    <div class="metric">
+      <div class="label">DIP Violation Discovery</div>
+      <div class="value m-bad">Runtime</div>
+      <div class="sub">never caught in unit tests</div>
+    </div>
+    <div class="metric">
+      <div class="label">LSP Violation Discovery</div>
+      <div class="value m-bad">Production</div>
+      <div class="sub">silent data corruption</div>
+    </div>
+    <div class="metric">
+      <div class="label">Time to add payment provider (DIP)</div>
+      <div class="value m-good">~2h</div>
+      <div class="sub">implement + register only</div>
+    </div>
+    <div class="metric">
+      <div class="label">Build time (circular deps)</div>
+      <div class="value m-bad">+40%</div>
+      <div class="sub">DIP violations cause circular refs</div>
+    </div>
+  </div>
+
+  <!-- DOTNET ECOSYSTEM -->
+  <div class="callout info">
+    <div class="callout-icon">🔗</div>
+    <div>
+      <strong>.NET Ecosystem Alignment:</strong> SOLID is the design philosophy behind every major .NET pattern library.
+      <strong>MediatR</strong> (SRP via command/query handlers) ·
+      <strong>FluentValidation</strong> (SRP — validation as a separate concern) ·
+      <strong>Polly</strong> (OCP — new resilience policies without modifying existing ones) ·
+      <strong>AutoFac / Microsoft.Extensions.DI</strong> (DIP — composition root pattern) ·
+      <strong>Entity Framework Core</strong> (Repository pattern enables DIP over raw SQL) ·
+      <strong>Clean Architecture template</strong> (the canonical .NET DIP project structure).
+    </div>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-icon">✅</div>
+    <div>
+      <strong>Architect's Final Take:</strong> SOLID is not a checklist — it's a vocabulary for identifying coupling. Every violation maps to a coupling type (logical, temporal, data, interface, concretion). Use the principles diagnostically: when a PR is hard to review, identify which SOLID principle it violates and name the coupling category. That vocabulary transforms vague "feels wrong" intuitions into actionable architectural decisions.
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1e2240',
+    primaryTextColor: '#e8eaf2',
+    primaryBorderColor: '#6c8fff',
+    lineColor: '#4a5568',
+    secondaryColor: '#1a1e2e',
+    tertiaryColor: '#0d0f12',
+    background: '#0d0f12',
+    nodeBorder: '#4a5568',
+    clusterBkg: '#141720',
+    titleColor: '#e8eaf2',
+    edgeLabelBackground: '#1a1e2e',
+    fontSize: '13px',
+    fontFamily: 'JetBrains Mono, monospace'
+  }
+});
+
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+}
+</script>
+</body>
+</html>
