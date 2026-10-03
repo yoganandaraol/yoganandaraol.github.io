@@ -123,3 +123,31 @@ section > h2 small { font-weight: 400; color: var(--muted); font-size: .8rem; }
 .stat span { font-size: .8rem; line-height: 1.45; display: block; }
 @media (max-width: 980px) { .stats { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 420px) { .stats { grid-template-columns: 1fr; } }
+
+/* what I bring */
+.value-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.value { border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: .9rem 1.1rem; }
+.value:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.value h3 { margin: 0 0 .3rem; font-size: 1rem; color: var(--ink); }
+.value p { margin: 0; font-size: .9rem; color: var(--muted); }
+
+/* core skills */
+.skill-rows { display: grid; gap: .1rem; }
+.sk-row { display: grid; grid-template-columns: 190px 1fr; gap: .4rem 1rem; padding: .7rem 0; border-top: 1px solid var(--line); align-items: start; }
+.sk-row:first-child { border-top: 0; }
+.sk-row h3 { margin: .2rem 0 0; font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.sk-row .chips { gap: .4rem; }
+.sk-row .chip { background: #eef2f6; color: #3b4756; font-size: .8rem; }
+.sk-row .chip.core { background: var(--accent); color: #fff; font-weight: 600; }
+
+/* lessons */
+.lesson-list { display: grid; gap: .6rem; }
+.lesson { padding: .7rem 1rem; background: #f8fafb; border: 1px solid var(--line); border-radius: 10px; font-size: .92rem; }
+.lesson b { color: var(--accent); }
+.lesson span { color: var(--muted); }
+.apply { margin: 1rem 0 0; padding: .8rem 1rem; background: var(--accent-soft); border-radius: 10px; font-size: .93rem; }
+
+@media (max-width: 640px) {
+  .value-grid { grid-template-columns: 1fr; }
+  .sk-row { grid-template-columns: 1fr; }
+}
