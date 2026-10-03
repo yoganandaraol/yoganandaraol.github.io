@@ -57,7 +57,7 @@ img, svg { max-width: 100%; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 6px 22px var(--glow); }
 .btn.ghost:hover { border-color: var(--accent); }
 .hero-art { display: grid; place-items: center; position: relative; }
-.photo { width: min(320px, 70vw); aspect-ratio: 1; border-radius: 28% 72% 63% 37% / 40% 38% 62% 60%; object-fit: cover; border: 2px solid var(--accent); box-shadow: 0 0 0 10px var(--glow), 0 30px 60px rgba(0,0,0,.35); animation: morph 12s ease-in-out infinite; }
+.photo { width: min(320px, 70vw); aspect-ratio: 1; border-radius: 28% 72% 63% 37% / 40% 38% 62% 60%; object-fit: cover; object-position: center 18%; border: 2px solid var(--accent); box-shadow: 0 0 0 10px var(--glow), 0 30px 60px rgba(0,0,0,.35); animation: morph 12s ease-in-out infinite; }
 @keyframes morph { 50% { border-radius: 60% 40% 40% 60% / 55% 60% 40% 45%; } }
 .badge { position: absolute; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: .4rem .75rem; font-family: var(--mono); font-size: .75rem; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
 .badge.b1 { top: 6%; left: 2%; } .badge.b2 { bottom: 12%; right: 0; } .badge.b3 { bottom: 2%; left: 8%; }
