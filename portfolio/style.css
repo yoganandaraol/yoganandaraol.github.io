@@ -181,3 +181,14 @@ footer { text-align: center; padding: 2rem 1rem 3rem; color: var(--muted); font-
 .sub-h { margin: 3rem 0 1rem; font-size: 1.2rem; }
 @media (max-width: 960px) { .wins { grid-template-columns: 1fr; } }
 @media (max-width: 520px) { .win dl { grid-template-columns: 1fr; gap: .1rem; } .win dd { margin-bottom: .5rem; } }
+
+/* learning */
+.learn { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1.5rem; }
+.learn-head { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; }
+.learn-title { margin: 0; font-weight: 700; font-size: 1.15rem; }
+.learn-sub { margin: 0; font-family: var(--mono); font-size: .82rem; color: var(--accent); }
+.learn-note { color: var(--muted); margin: 1rem 0; }
+.learn-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: .6rem 1.5rem; }
+.learn-list li { display: flex; justify-content: space-between; gap: 1rem; padding: .6rem 0; border-bottom: 1px dashed var(--line); font-size: .92rem; }
+.learn-list em { font-style: normal; font-family: var(--mono); font-size: .75rem; color: var(--muted); white-space: nowrap; padding-top: .15rem; }
+@media (max-width: 720px) { .learn-list { grid-template-columns: 1fr; } }
