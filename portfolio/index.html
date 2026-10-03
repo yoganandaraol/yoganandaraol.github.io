@@ -17,6 +17,7 @@
       <a href="#home" class="active"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</a>
       <a href="#about"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>About</a>
       <a href="#experience"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4h6v3"/></svg>Experience</a>
+      <a href="#impact"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Impact</a>
       <a href="#projects"><svg viewBox="0 0 24 24"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></svg>Projects</a>
       <a href="#skills"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>Skills</a>
       <a href="#resume"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>Resume</a>
@@ -45,7 +46,7 @@
         </div>
       </div>
       <div class="hero-art">
-        <img class="photo" src="../assets/yoganandaraol.jpg" alt="Portrait of Yogananda Rao Locherla">
+        <img class="photo" src="../assets/yoga-headshot.webp" alt="Portrait of Yogananda Rao Locherla">
         <span class="badge b1">.NET Core</span>
         <span class="badge b2">Agent Framework</span>
         <span class="badge b3">React</span>
@@ -58,7 +59,7 @@
     <div class="wrap">
       <div class="eyebrow reveal">About me</div>
       <h2 class="h2 reveal">Let me introduce myself</h2>
-      <div class="about">
+      <div class="about single">
         <div class="reveal">
           <p>I'm a <b>senior full stack developer and AI engineer</b> who enjoys designing systems that stay reliable under real-world load. I've shipped products in banking, legal-tech, automotive, semiconductor and healthcare, and I'm happiest where architecture, code quality and delivery meet.</p>
           <p>Today I build <b>enterprise AI agents with the Microsoft Agent Framework</b> at InfoTrack — checkpointed workflows, MCP tools and event-driven dispatch that automate conveyancing for law firms — on a .NET Core and React platform.</p>
@@ -72,12 +73,6 @@
               <a href="mailto:yoganandaraol@gmail.com"><svg viewBox="0 0 24 24"><path d="M2 5h20v14H2zm2 2v.5l8 5.500 8-5.500V7zm16 3-8 5.500L4 10v7h16z"/></svg>Email</a>
             </div>
           </div>
-        </div>
-        <div class="stats reveal">
-          <div class="stat"><b>15+</b><span>years in IT</span></div>
-          <div class="stat"><b>8</b><span>organisations across 4 industries</span></div>
-          <div class="stat"><b>80%+</b><span>unit-test coverage standard</span></div>
-          <div class="stat"><b>150</b><span>TPS load-tested fraud-check API</span></div>
         </div>
       </div>
     </div>
@@ -138,8 +133,121 @@
     </div>
   </section>
 
+  <!-- IMPACT -->
+  <section class="block alt" id="impact">
+    <div class="wrap">
+      <div class="eyebrow reveal">Impact</div>
+      <h2 class="h2 reveal">Wins &amp; how I improve systems</h2>
+      <div class="wins">
+        <article class="win reveal">
+          <div class="tagline">CBA · Risk Rating Engine</div>
+          <h3>Fraud checks fast enough for live payments</h3>
+          <dl>
+            <dt>Challenge</dt><dd>Fraud validation sits inside the business payments flow, so every millisecond is felt by customers.</dd>
+            <dt>What I did</dt><dd>Built a lean Web API with quick validation rules, added a Redis cache for business logic, and load-tested with JMeter at 2, 10, 50, 100 and 150 TPS.</dd>
+            <dt>Result</dt><dd>A service verified at 150 TPS, whose transaction patterns also feed a repository for ML-based fraud models.</dd>
+          </dl>
+        </article>
+        <article class="win reveal">
+          <div class="tagline">CBA · CommBiz Registration</div>
+          <h3>Safe cut-over from a legacy registration flow</h3>
+          <dl>
+            <dt>Challenge</dt><dd>An old registration process had to move to new CBA standards without breaking existing customers.</dd>
+            <dt>What I did</dt><dd>Designed a tactical solution bridging old and new systems, built a kill switch to toggle between them, and planned BVT with instrumentation-log monitoring across test, staging and NFT.</dd>
+            <dt>Result</dt><dd>A reversible release: the change could be switched off instantly if anything looked wrong.</dd>
+          </dl>
+        </article>
+        <article class="win reveal">
+          <div class="tagline">CBA · Foundational assets</div>
+          <h3>Faster starts for every new API</h3>
+          <dl>
+            <dt>Challenge</dt><dd>New services need the same plumbing: logging, validation, error handling.</dd>
+            <dt>What I did</dt><dd>Contributed .NET Core Web API scaffold templates, including shared middleware (for example, an interceptor that rejects requests missing mandatory HTTP headers).</dd>
+            <dt>Result</dt><dd>Consistent, reusable foundations shared across services instead of one-off boilerplate.</dd>
+          </dl>
+        </article>
+        <article class="win reveal">
+          <div class="tagline">CBA · Release ownership</div>
+          <h3>Releases that don’t page anyone at night</h3>
+          <dl>
+            <dt>Challenge</dt><dd>High-availability production systems with enterprise and ad-hoc releases.</dd>
+            <dt>What I did</dt><dd>Owned CRs, communication, TVT/BVT, Splunk monitoring, incident management and UAT; built Splunk dashboards and alerts to catch problems early.</dd>
+            <dt>Result</dt><dd>Disciplined, observable releases targeting zero incidents.</dd>
+          </dl>
+        </article>
+        <article class="win reveal">
+          <div class="tagline">CBA · Secure delivery</div>
+          <h3>Security findings turned into fixes</h3>
+          <dl>
+            <dt>Challenge</dt><dd>Vulnerabilities, memory leaks and throughput limits surface late if nobody owns them.</dd>
+            <dt>What I did</dt><dd>Triaged Checkmarx and SonarQube reports from TeamCity builds, worked with NFT and pen-test teams, and drove fixes into the codebase.</dd>
+            <dt>Result</dt><dd>Recognised as an AppSec Champion (Secure Code Warrior).</dd>
+          </dl>
+        </article>
+        <article class="win reveal">
+          <div class="tagline">CBA Invoicing · InfoTrack SettleIT</div>
+          <h3>Database changes shipped like code</h3>
+          <dl>
+            <dt>Challenge</dt><dd>Manual database deployments are slow and error-prone.</dd>
+            <dt>What I did</dt><dd>Extended the Invoicing pipeline to run Liquibase scripts before App Service deployment, and designed an Azure DevOps CI/CD pipeline for database deployment in SettleIT.</dd>
+            <dt>Result</dt><dd>Repeatable, automated schema deployments alongside application releases.</dd>
+          </dl>
+        </article>
+        <article class="win reveal">
+          <div class="tagline">InfoTrack · AI Paralegal</div>
+          <h3>Agents that can safely retry</h3>
+          <dl>
+            <dt>Challenge</dt><dd>Long conveyancing workflows span many steps and external systems; a failure halfway must not duplicate orders.</dd>
+            <dt>What I did</dt><dd>Designed checkpointed workflows that run idempotently, event-driven dispatch from classified user intent, and a modular monolith so busy modules can scale on their own.</dd>
+            <dt>Result</dt><dd>Agentic workflows that automate KYC, contract review, drafting and certificate ordering end to end.</dd>
+          </dl>
+        </article>
+        <article class="win reveal">
+          <div class="tagline">InfoTrack · AI-assisted delivery</div>
+          <h3>Shipping several features in parallel with AI</h3>
+          <dl>
+            <dt>Challenge</dt><dd>Rapid delivery without losing design discipline.</dd>
+            <dt>What I did</dt><dd>Adopted a custom agentic development lifecycle (ADLC) with Claude Code, recorded decisions as ADRs, and ran multiple parallel sessions through git worktrees.</dd>
+            <dt>Result</dt><dd>Multiple tasks delivered at once with decisions documented as they were made.</dd>
+          </dl>
+        </article>
+      </div>
+
+      <h3 class="sub-h reveal">Recognition &amp; credentials</h3>
+      <div class="certs">
+        <div class="cert reveal"><b>Best Execution Mindset</b>Awarded multiple times for delivery ownership</div>
+        <div class="cert reveal"><b>AppSec Champion</b>Secure Code Warrior</div>
+        <div class="cert reveal"><b>MCP — Developing Web Applications with ASP.NET</b>Microsoft Certified Professional</div>
+        <div class="cert reveal"><b>Hackathon MVPs</b>IoT hackathons, and a Techathon MVP using MongoDB geospatial</div>
+        <div class="cert reveal"><b>NLTK chatbot</b>Python chatbot answering with 70–80% accuracy</div>
+      </div>
+
+      <h3 class="sub-h reveal">Always learning</h3>
+      <div class="learn reveal">
+        <div class="learn-head">
+          <div>
+            <p class="learn-title">Microsoft Learn</p>
+            <p class="learn-sub">Level 4 · 12,400 XP · 8 module badges</p>
+          </div>
+          <a class="btn ghost" href="https://learn.microsoft.com/en-us/users/yoganandaraol/" target="_blank" rel="noopener">View my profile →</a>
+        </div>
+        <p class="learn-note">Recent focus: building agents with the Microsoft Agent Framework, MCP tools on Azure AI, and real-time apps with SignalR — the same skills I apply in AI Paralegal.</p>
+        <ul class="learn-list">
+          <li class="reveal"><span>Develop an AI agent with Microsoft Agent Framework</span><em>Dec 2025</em></li>
+          <li class="reveal"><span>Introduction to generative AI and agents</span><em>Dec 2025</em></li>
+          <li class="reveal"><span>Integrate MCP Tools with Azure AI Agents</span><em>Dec 2025</em></li>
+          <li class="reveal"><span>Get started with AI agent development on Azure</span><em>Nov 2025</em></li>
+          <li class="reveal"><span>Introduction to ASP.NET Core SignalR</span><em>Apr 2025</em></li>
+          <li class="reveal"><span>Write your first PowerShell code</span><em>Feb 2025</em></li>
+          <li class="reveal"><span>Cloud Concepts — Principles of cloud computing</span><em>May 2019</em></li>
+          <li class="reveal"><span>Core Cloud Services — Introduction to Azure</span><em>May 2019</em></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
   <!-- PROJECTS -->
-  <section class="block alt" id="projects">
+  <section class="block" id="projects">
     <div class="wrap">
       <div class="eyebrow reveal">Projects</div>
       <h2 class="h2 reveal">Things I've built</h2>
@@ -215,7 +323,7 @@
   </section>
 
   <!-- SKILLS -->
-  <section class="block" id="skills">
+  <section class="block alt" id="skills">
     <div class="wrap">
       <div class="eyebrow reveal">Skills</div>
       <h2 class="h2 reveal">Tools I work with</h2>
@@ -227,16 +335,11 @@
         <div class="skill reveal"><h3><i></i>Cloud &amp; DevOps</h3><div class="tags"><span class="tag hot">Azure</span><span class="tag">AWS</span><span class="tag">AKS / Kubernetes</span><span class="tag">Docker</span><span class="tag">Azure DevOps</span><span class="tag">TeamCity</span><span class="tag">Octopus</span><span class="tag">Jenkins</span><span class="tag">JFrog</span><span class="tag">Key Vault</span></div></div>
         <div class="skill reveal"><h3><i></i>Quality &amp; Security</h3><div class="tags"><span class="tag hot">OWASP</span><span class="tag">xUnit</span><span class="tag">Fluent Assertions</span><span class="tag">SonarQube</span><span class="tag">Checkmarx</span><span class="tag">DataDog</span><span class="tag">Splunk</span><span class="tag">AppDynamics</span></div></div>
       </div>
-      <div class="certs">
-        <div class="cert reveal"><b>AppSec Champion</b>Secure Code Warrior</div>
-        <div class="cert reveal"><b>MCP — ASP.NET Web Applications</b>Microsoft Certified Professional</div>
-        <div class="cert reveal"><b>“Best Execution Mindset”</b>Awarded multiple times</div>
-      </div>
     </div>
   </section>
 
   <!-- RESUME + KB -->
-  <section class="block alt" id="resume">
+  <section class="block" id="resume">
     <div class="wrap">
       <div class="eyebrow reveal">Resume &amp; writing</div>
       <h2 class="h2 reveal">Dig deeper</h2>
@@ -256,7 +359,7 @@
   </section>
 
   <!-- CONTACT -->
-  <section class="block" id="contact">
+  <section class="block alt" id="contact">
     <div class="wrap contact">
       <div class="eyebrow reveal">Contact</div>
       <h2 class="h2 reveal">Let's build something reliable</h2>
