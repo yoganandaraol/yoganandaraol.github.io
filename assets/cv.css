@@ -95,3 +95,11 @@ section > h2::before { content: ""; width: 6px; height: 1.2em; border-radius: 3p
   .cta-row { display: none; }
   section { border: 0; padding: .5rem 0; break-inside: avoid-page; }
 }
+
+/* project blocks inside a job */
+section > h2 small { font-weight: 400; color: var(--muted); font-size: .8rem; }
+.sub { margin: 1rem 0 0; padding: .9rem 1rem; background: #f8fafb; border: 1px solid var(--line); border-radius: 10px; }
+.sub h4 { margin: 0 0 .3rem; font-size: .98rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: .2rem 1rem; }
+.sub .desc { margin: .3rem 0; }
+.sub ul { font-size: .92rem; }
+#responsibilities ul { font-size: .94rem; }
