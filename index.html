@@ -73,95 +73,189 @@
       </div>
     </section>
 
+    <section id="responsibilities">
+      <h2>Roles &amp; Responsibilities</h2>
+      <ul>
+        <li>Solution design with architects: understanding HLD and documenting implementation design; feasibility checks, impact analysis, estimates and strategic release plans.</li>
+        <li>Application development, code reviews, low-level design and code quality; unit and acceptance testing with an 80% minimum coverage standard.</li>
+        <li>API development; troubleshooting through Splunk dashboards and alert generation; building monitoring tools and log analysis.</li>
+        <li>Contributing foundational assets such as .NET Core Web API scaffold templates, including middleware.</li>
+        <li>Release management: initiating CRs, communicating changes, TVT/BVT, monitoring in Splunk, incident management and UAT (enterprise and ad-hoc releases).</li>
+        <li>Setting technical direction: choosing tools and technologies, identifying code smells and tech debt; managing and mitigating risk via Checkmarx and SonarQube reports.</li>
+        <li>Working with NFT and pen-test teams on TPS, memory leaks and vulnerabilities; with Ops on infrastructure; with Network on rate limiting, firewall burns and inbound/outbound traffic.</li>
+        <li>Driving the three-way handshake between developers, QA and BAs so test scope is unambiguous.</li>
+        <li>OWASP-aware secure coding; TeamCity build pipelines integrating code-quality and code-security tools.</li>
+      </ul>
+      <p class="desc" style="margin-top:.75rem"><b>CI/CD:</b> Azure DevOps, GitHub, JFrog, Octopus, TeamCity, Jenkins, Key Vault &nbsp;·&nbsp; <b>Quality &amp; monitoring:</b> AppDynamics, SonarQube, Checkmarx, Splunk, DataDog</p>
+    </section>
+
     <section id="experience">
-      <h2>Work Experience</h2>
+      <h2>Work Experience &amp; Projects <small>(latest first)</small></h2>
 
       <article class="job">
         <div class="job-head"><h3>.NET Developer — AI &amp; Conveyancing</h3><span class="when">Jul 2023 – Present</span></div>
-        <div class="co">InfoTrack · Australia</div>
-        <p class="desc">Building SettleIT and AI Paralegal — property settlement, lodgement and caveat workflows with PEXA and practice-management integrations.</p>
-        <ul>
-          <li>Design and build agentic workflows with the Microsoft Agent Framework: tools, MCP integrations, checkpointed idempotent workflows, event-driven task dispatch from user intent.</li>
-          <li>Modular-monolith architecture so high-demand modules can be split out and scaled independently; user-defined workflows per law-firm guidelines.</li>
-          <li>Rapid delivery with Claude Code and a custom agentic development lifecycle (ADLC), ADR recording, and parallel sessions via git worktrees.</li>
-          <li>SettleIT: CQRS with Clean Architecture, EF Core, SignalR real-time updates, Key Vault certificate management, Azure DevOps database-deployment pipeline.</li>
-        </ul>
-        <div class="stack"><b>Stack:</b> .NET Core, Microsoft Agent Framework, LiteLLM, Aspire, React, MobX, SignalR, PostgreSQL, Qdrant, Redis, SQL Server, Oracle, EF Core, AKS/Kubernetes, Azure DevOps, AWS, HashiCorp Vault, DataDog, xUnit</div>
+        <div class="co">InfoTrack · Australia · Conveyancing</div>
+        <p class="desc">Products: SettleIT and AI Paralegal. Features: order creation (settlement, lodgement, caveat), onboarding, PEXA and PMS integration, AI agents automating end-to-end conveyancing workflows.</p>
+        <div class="stack"><b>Tools &amp; tech:</b> Microsoft Agent Framework, LiteLLM, Aspire, PostgreSQL, Azure DevOps, AWS, AKS, Kubernetes, .NET Core, SignalR, React, MobX, Web API, ASP.NET MVC, Oracle, SQL Server, EF Core, xUnit, Fluent Assertions, Swagger, GitHub, HashiCorp Vault, DataDog</div>
+        <div class="stack"><b>AI-assisted development:</b> Claude Code, ADLC, ADR recording, multiple parallel sessions via git worktrees to deliver several tasks at once.</div>
+
+        <div class="sub">
+          <h4>AI Paralegal <span class="when">Nov 2025 – present</span></h4>
+          <p class="desc">AI-based agentic workflow automating a property purchase or sale, from onboarding the client to settlement: KYC, contract review, negotiation and exchange, drafting emails to purchasers and vendor solicitors, settlements, and ordering certificates (Strata, water rates, council rates), purchase declarations and trust authority accounts.</p>
+          <ul>
+            <li>Consume several InfoTrack-developed MCP tools to place orders from the platform.</li>
+            <li>Create agents with the Microsoft Agent Framework, plus tools that perform supporting tasks and bring more context to the agent.</li>
+            <li>Build checkpointed workflows so they can be run idempotently.</li>
+            <li>Event-driven task dispatch: classify user intent and dispatch the matching event to be performed probabilistically.</li>
+            <li>Modular-monolith modules so high-demand modules can be separated and scaled easily.</li>
+            <li>Rapid delivery using AI tools with a customised ADLC process.</li>
+            <li>Designed the system to support user-defined workflows based on each firm's operating guidelines.</li>
+          </ul>
+          <div class="stack"><b>Front-end:</b> React, Jest, ASP.NET Web API · <b>Back-end:</b> Microsoft Agent Framework, .NET Core, EF Core, microservices · <b>Database:</b> PostgreSQL, Qdrant, Redis · <b>CI/CD:</b> Azure DevOps, Docker, AKS, Key Vault · <b>Monitoring:</b> DataDog dashboards &amp; alerts</div>
+        </div>
+
+        <div class="sub">
+          <h4>SettleIT <span class="when">Jul 2023 – Nov 2025</span></h4>
+          <p class="desc">Cloud-based conveyancing web application for lawyers, agents and their clients to create orders for property settlements, lodgements and caveats; integrates with PEXA and LEAP for seamless end-to-end conveyancing.</p>
+          <p class="desc"><b>Features:</b> order creation (settlements, lodgements, caveats), title search, VOI, CAF; integration with PEXA and internal platform APIs; notifications and real-time updates via SignalR.</p>
+          <ul>
+            <li>Developed REST microservices with .NET Core and Web API; features built with CQRS and Clean Architecture.</li>
+            <li>CRUD operations with EF Core; high-performing code using appropriate design patterns.</li>
+            <li>Developed a SignalR hub to push events and update other parties in real time.</li>
+            <li>Configured OS-independent certificate management with Key Vault.</li>
+            <li>Refactored code to apply best practices and newer language features.</li>
+            <li>Designed and built an Azure DevOps CI/CD pipeline for database deployment.</li>
+            <li>Documented low-level design with sequence diagrams; unit tests with xUnit.</li>
+          </ul>
+          <div class="stack"><b>Front-end:</b> React, MobX, Jest, ASP.NET MVC · <b>Back-end:</b> .NET Core, EF Core, microservices · <b>Database:</b> SQL Server · <b>CI/CD:</b> Azure DevOps, Docker, AKS, Key Vault · <b>Monitoring:</b> DataDog</div>
+        </div>
       </article>
 
       <article class="job">
-        <div class="job-head"><h3>Team Lead — Full Stack Developer</h3><span class="when">2018 – 2023</span></div>
-        <div class="co">Commonwealth Bank of Australia (via HCL Technologies)</div>
-        <p class="desc">CommBiz, CommSee and NetBank products: CommProperty, Invoicing, Payments &amp; Authorisations, Payment Risk Assessment, Business Cashflow.</p>
-        <ul>
-          <li>Led solution design, code reviews, coding standards and documentation; set technical direction and tracked tech debt.</li>
-          <li>Owned release activities end to end: change requests, TVT/BVT, monitoring, incident management, UAT engagement.</li>
-          <li>Built .NET Core Web API scaffold templates and shared middleware used as foundational assets.</li>
-          <li>Worked with NFT and pen-test teams on throughput, memory leaks and vulnerabilities; triaged Checkmarx and SonarQube reports.</li>
-          <li>Built Splunk dashboards and alerts; configured TeamCity build pipelines, Octopus deployments, JFrog artefacts.</li>
-        </ul>
-        <div class="stack"><b>Stack:</b> .NET Core, React, Redux, Kafka, Azure Functions, WCF, Oracle, SQL Server, Liquibase, xUnit, TeamCity, Octopus, Checkmarx, SonarQube, AppDynamics, Splunk</div>
+        <div class="job-head"><h3>Team Lead — Development</h3><span class="when">2018 – 2023 · 4.5 yrs</span></div>
+        <div class="co">Commonwealth Bank of Australia (via HCL Technologies) · Banking &amp; Finance</div>
+        <p class="desc">Products: CommBiz, CommSee, NetBank. Features: CommProperty, Invoicing, DFTS payments, payment authorisations, payment risk assessment, paperless documentation, prospect user registration, feedback forms, C2E, Business Cashflow.</p>
+        <div class="stack"><b>Tools &amp; tech:</b> Azure, SSO, .NET Core, React, Redux, Thunk, Redux-Observable, Web API, WCF, ASP.NET MVC, Oracle, Liquibase, SQL Server, xUnit, Fluent Assertions, Swagger, Gherkin, TeamCity, GitHub, Octopus, Checkmarx, SonarQube, AppDynamics, Jira, API Portal</div>
+
+        <div class="sub">
+          <h4>CommProperty</h4>
+          <p class="desc">Hybrid-cloud web application under Home Lending for brokers and lenders: search properties in Australia, understand demand and trends, assess valuations and send property reports to customers. Lenders onboard through CommSee (Windows application).</p>
+          <p class="desc"><b>Features:</b> onboarding lenders and brokers and launching a non-CBA valuation application through SSO; customer activity dashboard, history of property reports, and report email (reliable sending via a Kafka topic).</p>
+          <ul>
+            <li>Provisioned and set up GitHub repos for end-to-end development; contributed to end-to-end solution design with the CTL and architects.</li>
+            <li>Developed a REST authentication microservice with Web API; generated and validated SAML tokens using SAML extensions.</li>
+            <li>Built custom interceptors to authenticate lenders and brokers and generate cookies.</li>
+            <li>Consumed a Kafka topic to send customer notifications; consumed DataProxy to read from Oracle.</li>
+            <li>Built Splunk dashboards and alerts; OS-independent certificate management with Key Vault and Octopus.</li>
+            <li>Unit tests with xUnit and NSubstitute; configured and troubleshot TeamCity build steps with PowerShell; sequence-diagram LLD.</li>
+          </ul>
+          <div class="stack"><b>Front-end:</b> React, Redux, Redux-Thunk, Jest, .NET Framework/C# · <b>Back-end:</b> .NET Core, Kafka, microservices · <b>Database:</b> Oracle · <b>CI/CD:</b> Azure, App Service, TeamCity, Key Vault, Octopus, JFrog Artifactory · <b>Monitoring:</b> Splunk, Checkmarx, SonarQube</div>
+        </div>
+
+        <div class="sub">
+          <h4>Invoicing</h4>
+          <p class="desc">Cloud-based NetBank application for small-business customers to generate, settle and reconcile invoices; track pending invoices and notify customers with reminders in a click.</p>
+          <p class="desc"><b>Features:</b> PDF invoice generation from inventory items; auto-reconciliation for in-house and OFI payments; invoice-payment tracking with settable reminders.</p>
+          <ul>
+            <li>Created a .NET Core Web API microservice exposing an endpoint for an Azure Function to auto-reconcile payments against an invoice.</li>
+            <li>Built the React front-end for creating and searching invoices; data access via DataProxy; consumed the documents API for PDF generation.</li>
+            <li>Contributed an interceptor that validates mandatory HTTP headers and returns bad request on failure; API testing with Postman.</li>
+            <li>Analysed Checkmarx reports from TeamCity builds; extended the pipeline to run Liquibase scripts before deployment to Azure App Service.</li>
+          </ul>
+          <div class="stack"><b>Front-end:</b> React, Redux, Redux-Observable, Jest · <b>Back-end:</b> .NET Core, Azure Functions (serverless) · <b>Database:</b> Azure SQL Server · <b>CI/CD:</b> Azure, App Service, Liquibase, TeamCity, Octopus, JFrog · <b>Monitoring:</b> Splunk, Checkmarx, SonarQube, AppDynamics</div>
+        </div>
+
+        <div class="sub">
+          <h4>Business Cashflow</h4>
+          <p class="desc">Cloud-based NetBank application that summarises cashflow with charts to visualise spend patterns across business accounts and credit cards, for a quick glance at the business's position.</p>
+          <p class="desc"><b>Features:</b> spend-pattern charts; include/exclude transaction categories reflected seamlessly in the mobile app.</p>
+          <ul>
+            <li>Consumed existing channel APIs from the edge layer.</li>
+            <li>Built bar charts with D3.js, themed to meet CBA accessibility standards.</li>
+          </ul>
+          <div class="stack"><b>Front-end:</b> React, Redux, Redux-Observable, Jest · <b>Back-end:</b> .NET Core, Web API · <b>CI/CD:</b> Azure, App Service, TeamCity, Octopus, JFrog · <b>Monitoring:</b> Splunk, Checkmarx, SonarQube, AppDynamics</div>
+        </div>
+
+        <div class="sub">
+          <h4>Risk Rating Engine</h4>
+          <p class="desc">REST microservice integrated into the business-banking payments flow to detect fraudulent payments; contributes transaction patterns back to a repository for developing ML-based models.</p>
+          <ul>
+            <li>Built a highly responsive Web API that applies validation rules quickly.</li>
+            <li>Implemented a Redis cache to improve business-logic performance.</li>
+            <li>JMeter throughput tests at 2, 10, 50, 100 and 150 TPS.</li>
+          </ul>
+          <div class="stack"><b>Back-end:</b> .NET Core, Web API, Redis · <b>Database:</b> Oracle · <b>CI/CD:</b> ACDC, TeamCity, Windows Service · <b>Monitoring:</b> in-house instrumentation and service-monitor tools</div>
+        </div>
+
+        <div class="sub">
+          <h4>CommBiz Registration</h4>
+          <p class="desc">Web application for prospect customers; the legacy registration process was not aligned to current CBA standards. Consumes the CAAS API as the single source of truth for customer credentials.</p>
+          <ul>
+            <li>Gathered requirements and collaborated with the CAAS team to customise registration for CommBiz.</li>
+            <li>Built a kill switch to toggle between old and new registration; designed a tactical solution so existing customers keep working across both systems.</li>
+            <li>Consumed CAAS endpoints with HttpClient.</li>
+            <li>Involved in release management across test, staging and NFT environments; designed the BVT plan and monitored instrumentation logs for abnormalities.</li>
+          </ul>
+          <div class="stack"><b>Back-end:</b> .NET Framework, C#, HttpClient · <b>CI/CD:</b> ACDC, TeamCity, PowerShell build scripts · <b>Monitoring:</b> in-house instrumentation</div>
+        </div>
       </article>
 
       <article class="job">
-        <div class="job-head"><h3>Senior Developer</h3><span class="when">2014 – 2018</span></div>
-        <div class="co">Dana · Ohio, USA — Automotive manufacturing</div>
-        <p class="desc">Application Engineering Tool for off-road vehicles: a rule engine to calibrate transmission, axle and driveshaft for engine and wheelbase configurations; Salesforce integration.</p>
-        <div class="stack"><b>Stack:</b> .NET, ASP.NET MVC, AngularJS, SQL Server, LINQ, Entity Framework, Telerik, C++</div>
+        <div class="job-head"><h3>Senior Developer</h3><span class="when">2014 – 2018 · 4.5 yrs</span></div>
+        <div class="co">Dana · Ohio, USA · Automobile manufacturing</div>
+        <p class="desc"><b>Application Engineering Tool</b> (off-road vehicles): a rule engine to calibrate transmission, axle and driveshaft for different engine, transmission and wheelbase configurations.</p>
+        <div class="stack"><b>Tools &amp; tech:</b> Salesforce integration, .NET Framework, ASP.NET MVC, AngularJS, SQL Server, LINQ, Entity Framework, Telerik, VBScript, Excel, C++, mathematics</div>
       </article>
 
       <article class="job">
-        <div class="job-head"><h3>Developer</h3><span class="when">2012 – 2014</span></div>
-        <div class="co">Intel · India — Semiconductor</div>
-        <p class="desc">Motherboard reporting tool (SysScope) and software-development process automation (SDPT) integrating Perforce, Beyond Compare and Code Collaborator APIs.</p>
-        <div class="stack"><b>Stack:</b> C#, WPF, multithreading</div>
+        <div class="job-head"><h3>Developer</h3><span class="when">2012 – 2014 · 1.5 yrs</span></div>
+        <div class="co">Intel · India · Semiconductor manufacturing</div>
+        <p class="desc"><b>SysScope</b> (motherboard reporting tool) and <b>SDPT</b> (Software Development Process Tool): development-process integration and automation.</p>
+        <div class="stack"><b>Tools &amp; tech:</b> C#, WPF, threading, Perforce API, Beyond Compare API, SmartBear Code Collaborator API, bug-tracking system services</div>
       </article>
 
       <article class="job">
-        <div class="job-head"><h3>Earlier roles</h3><span class="when">2009 – 2012</span></div>
-        <div class="co">Magna (UHG) · Bank of America · Microsoft · Focal Technology</div>
-        <ul>
-          <li><b>Magna / UHG (2011–12):</b> Local Care Guide nurse-line system — ASP.NET MVC, SQL Server.</li>
-          <li><b>Bank of America (2011):</b> Merrill Lynch wealth-management trading-advisory interface — JavaScript, jQuery, WCF.</li>
-          <li><b>Microsoft (2010–11):</b> MIO individuals &amp; organisations hierarchy, data cleansing and onboarding — C#, WCF, SSIS.</li>
-          <li><b>Focal Technology (2009–10):</b> Apparel Management System — ASP.NET, WPF, NHibernate.</li>
-        </ul>
+        <div class="job-head"><h3>Developer</h3><span class="when">2011 – 2012 · ~1 yr</span></div>
+        <div class="co">Magna (UHG) · Minnetonka, USA · Insurance &amp; healthcare</div>
+        <p class="desc"><b>Local Care Guide (LCG):</b> nurse-line system that suggests nearby or specialty-specific physician and facility information to caregivers and patients.</p>
+        <div class="stack"><b>Tools &amp; tech:</b> ASP.NET MVC, Telerik controls, SQL Server</div>
+      </article>
+
+      <article class="job">
+        <div class="job-head"><h3>Developer</h3><span class="when">2011 · 0.4 yr</span></div>
+        <div class="co">Bank of America · USA · Banking &amp; finance</div>
+        <p class="desc"><b>Wealth Management System (Merrill Lynch):</b> wealth-management interface for trading advisors.</p>
+        <div class="stack"><b>Tools &amp; tech:</b> JavaScript, jQuery, AJAX, WCF services</div>
+      </article>
+
+      <article class="job">
+        <div class="job-head"><h3>Integration Services &amp; App Support</h3><span class="when">2010 – 2011 · 1.3 yrs</span></div>
+        <div class="co">Microsoft · Redmond, USA · Software products</div>
+        <p class="desc"><b>MIO (Microsoft Individuals &amp; Organizations):</b> highly responsive interface for individual and organisation hierarchies; data engineering and cleansing, taxonomy, customer onboarding.</p>
+        <div class="stack"><b>Tools &amp; tech:</b> C#, WCF, SSIS, SQL Server, Webstore, unit testing</div>
+      </article>
+
+      <article class="job">
+        <div class="job-head"><h3>Developer</h3><span class="when">2009 – 2010 · 0.4 yr</span></div>
+        <div class="co">Focal Technology · USA · Apparel management</div>
+        <p class="desc"><b>Apparel Management System (AMS):</b> admin, customer branding, vendor management and reports.</p>
+        <div class="stack"><b>Tools &amp; tech:</b> ASP.NET, jQuery, AJAX, WPF, NHibernate, FoxPro, SQL Server</div>
       </article>
     </section>
 
-    <section id="projects">
-      <h2>Selected Projects</h2>
-      <div class="proj-grid">
-        <div class="proj">
-          <h3>AI Paralegal</h3><div class="meta">InfoTrack · Nov 2025 – present</div>
-          <p>Agentic workflow automating a property purchase or sale: KYC, contract review and negotiation, drafting emails, certificate orders and settlement.</p>
-          <div class="chips"><span class="chip" style="background:#e3f4ef;color:#0a5c4b">Agent Framework</span><span class="chip" style="background:#e3f4ef;color:#0a5c4b">MCP</span><span class="chip" style="background:#e3f4ef;color:#0a5c4b">Qdrant</span></div>
-        </div>
-        <div class="proj">
-          <h3>SettleIT</h3><div class="meta">InfoTrack · Jul 2023 – Nov 2025</div>
-          <p>Cloud conveyancing app for lawyers, agents and clients: orders, lodgement, caveats, title search, VOI; PEXA and LEAP integration.</p>
-          <div class="chips"><span class="chip" style="background:#e3f4ef;color:#0a5c4b">CQRS</span><span class="chip" style="background:#e3f4ef;color:#0a5c4b">SignalR</span><span class="chip" style="background:#e3f4ef;color:#0a5c4b">AKS</span></div>
-        </div>
-        <div class="proj">
-          <h3>CommProperty</h3><div class="meta">CBA · Home Lending</div>
-          <p>Hybrid-cloud property search, valuation and trends for brokers and lenders; SAML/SSO onboarding and Kafka-driven report email.</p>
-        </div>
-        <div class="proj">
-          <h3>Invoicing &amp; Business Cashflow</h3><div class="meta">CBA · NetBank</div>
-          <p>Invoice generation and auto-reconciliation via Azure Functions; D3.js spend-pattern charts meeting accessibility standards.</p>
-        </div>
-        <div class="proj">
-          <h3>Risk Rating Engine</h3><div class="meta">CBA · Payments</div>
-          <p>Low-latency fraud-detection microservice on the payments flow; Redis caching and JMeter testing up to 150 TPS.</p>
-        </div>
-        <div class="proj">
-          <h3>Knowledge Base</h3><div class="meta">Personal · <a href="./kb/">kb/</a></div>
-          <p>Deep dives on EF Core performance and SOLID principles, with correct, wrong and subtle-trap code examples.</p>
-        </div>
-      </div>
+    <section id="achievements">
+      <h2>Certifications, Participation &amp; Achievements</h2>
+      <ul>
+        <li>AppSec Champion — Secure Code Warrior.</li>
+        <li>MCP certified professional for developing web applications with ASP.NET.</li>
+        <li>Awarded multiple times for “Best Execution Mindset”.</li>
+        <li>Built a Python chatbot with NLTK, trained and predicting answers with 70–80% accuracy.</li>
+        <li>Hackathons: submitted MVPs on IoT; Techathon MVP leveraging MongoDB's geospatial capability.</li>
+      </ul>
     </section>
 
-    <section id="skills">
+
+<section id="skills">
       <h2>Skills</h2>
       <div class="skill-grid">
         <div><h3>Backend</h3><div class="chips"><span class="chip">.NET Core</span><span class="chip">C#</span><span class="chip">Web API</span><span class="chip">Microservices</span><span class="chip">CQRS</span><span class="chip">SignalR</span><span class="chip">EF Core</span><span class="chip">Kafka</span><span class="chip">WCF</span></div></div>
